@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0D1B2A">
+    <title>Select Menu</title>
+    <link rel="manifest" href="../manifest.json">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        [data-lang] {
+            display: none;
+        }
+    </style>
+    <script>
+        // Show only the selected language content
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const lang = urlParams.get('lang') || 'en';
+            
+            // Hide all language versions first
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Show only the selected language
+            document.querySelectorAll(`[data-lang="${lang}"]`).forEach(el => {
+                el.style.display = 'block';
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="menu-selection">
+        <div class="menu-panel" id="food-menu">
+            <img src="../assets/images/backgrounds/food-menu-bg.jpg" alt="Food Menu Background">
+            <div class="panel-content">
+                <!-- English -->
+                <div data-lang="en">
+                    <h2 class="panel-title">Menu</h2>
+                    <p class="panel-subtitle">Discover our dishes</p>
+                </div>
+                <!-- Portuguese -->
+                <div data-lang="pt">
+                    <h2 class="panel-title">Menu</h2>
+                    <p class="panel-subtitle">Descubra nossos pratos</p>
+                </div>
+                <!-- French -->
+                <div data-lang="fr">
+                    <h2 class="panel-title">Menu</h2>
+                    <p class="panel-subtitle">Découvrez nos plats</p>
+                </div>
+                <!-- Spanish -->
+                <div data-lang="es">
+                    <h2 class="panel-title">Menú</h2>
+                    <p class="panel-subtitle">Descubra nuestros platos</p>
+                </div>
+                <!-- German -->
+                <div data-lang="de">
+                    <h2 class="panel-title">Speisekarte</h2>
+                    <p class="panel-subtitle">Entdecken Sie unsere Gerichte</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-panel wine-panel" id="wine-menu">
+            <img src="../assets/images/backgrounds/wine-menu-bg.jpg" alt="Wine Menu Background">
+            <div class="panel-content">
+                <!-- English -->
+                <div data-lang="en">
+                    <h2 class="panel-title">Wine List</h2>
+                    <p class="panel-subtitle">Explore our cellar</p>
+                </div>
+                <!-- Portuguese -->
+                <div data-lang="pt">
+                    <h2 class="panel-title">Carta de Vinhos</h2>
+                    <p class="panel-subtitle">Explore nossa adega</p>
+                </div>
+                <!-- French -->
+                <div data-lang="fr">
+                    <h2 class="panel-title">Carte des Vins</h2>
+                    <p class="panel-subtitle">Explorez notre cave</p>
+                </div>
+                <!-- Spanish -->
+                <div data-lang="es">
+                    <h2 class="panel-title">Carta de Vinos</h2>
+                    <p class="panel-subtitle">Explore nuestra bodega</p>
+                </div>
+                <!-- German -->
+                <div data-lang="de">
+                    <h2 class="panel-title">Weinkarte</h2>
+                    <p class="panel-subtitle">Erkunden Sie unseren Weinkeller</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/select-menu-navigation.js"></script>
+</body>
+</html> 

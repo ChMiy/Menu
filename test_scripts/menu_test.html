@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .test-section {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f0f0;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Menu System Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Image Path Test</h2>
+        <div id="pathTest"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Menu Navigation Test</h2>
+        <div id="navTest"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Multi-page Test</h2>
+        <div id="multiTest"></div>
+    </div>
+
+    <script>
+        // Test image paths
+        function testImagePaths() {
+            const languages = ['pt', 'en', 'fr', 'es', 'de'];
+            const result = document.getElementById('pathTest');
+            let output = '';
+
+            languages.forEach(lang => {
+                // Test menu images
+                const menuImg = new Image();
+                menuImg.src = `../assets/images/menu/${lang}/menu_${lang}-1.jpg`;
+                menuImg.onload = () => {
+                    output += `<p class="success">✓ ${lang} menu image found</p>`;
+                    result.innerHTML = output;
+                };
+                menuImg.onerror = () => {
+                    output += `<p class="error">✗ ${lang} menu image not found</p>`;
+                    result.innerHTML = output;
+                };
+
+                // Test wine images
+                const wineImg = new Image();
+                wineImg.src = `../assets/images/wine/wine-${lang}.jpg`;
+                wineImg.onload = () => {
+                    output += `<p class="success">✓ ${lang} wine image found</p>`;
+                    result.innerHTML = output;
+                };
+                wineImg.onerror = () => {
+                    output += `<p class="error">✗ ${lang} wine image not found</p>`;
+                    result.innerHTML = output;
+                };
+            });
+        }
+
+        // Test menu navigation
+        function testNavigation() {
+            const result = document.getElementById('navTest');
+            const lang = 'pt'; // Test with Portuguese
+            
+            // Test URL parameters
+            const url = new URL(window.location.href);
+            const hasLang = url.searchParams.has('lang');
+            result.innerHTML += `<p class="${hasLang ? 'success' : 'error'}">URL parameter test: ${hasLang ? 'OK' : 'Missing lang parameter'}</p>`;
+            
+            // Test navigation functions
+            if (typeof navigateToHome === 'function') {
+                result.innerHTML += '<p class="success">Navigation function found</p>';
+            } else {
+                result.innerHTML += '<p class="error">Navigation function missing</p>';
+            }
+        }
+
+        // Test multi-page functionality
+        function testMultiPage() {
+            const result = document.getElementById('multiTest');
+            const lang = 'pt';
+            let pageCount = 0;
+
+            // Try to load pages until we hit a 404
+            function tryLoadPage(pageNum) {
+                const img = new Image();
+                img.src = `../assets/images/menu/${lang}/menu_${lang}-${pageNum}.jpg`;
+                img.onload = () => {
+                    pageCount++;
+                    tryLoadPage(pageNum + 1);
+                };
+                img.onerror = () => {
+                    result.innerHTML = `<p class="success">Found ${pageCount} pages for ${lang} menu</p>`;
+                };
+            }
+
+            tryLoadPage(1);
+        }
+
+        // Run tests
+        window.onload = () => {
+            testImagePaths();
+            testNavigation();
+            testMultiPage();
+        };
+    </script>
+</body>
+</html> 

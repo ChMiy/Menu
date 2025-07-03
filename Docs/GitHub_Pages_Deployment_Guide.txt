@@ -1,0 +1,81 @@
+GitHub Pages Deployment Guide
+Project: Restaurant Menu Website
+________________________________________
+
+This guide explains how to deploy the Restaurant Menu website to GitHub Pages using the GitHub web interface.
+
+1. Create a GitHub Repository
+   - Go to github.com and sign in to your account
+   - Click the "+" icon in the top-right corner
+   - Select "New repository"
+   - Name it "restaurant-menu" (or your preferred name)
+   - Make it Public (GitHub Pages requires public repos for free accounts)
+   - Don't initialize with README (we already have one)
+   - Click "Create repository"
+
+2. Upload Files
+   - In your new empty repository, click "uploading an existing file"
+   - Drag and drop all project files or use the file picker
+   - Important: Maintain the exact folder structure:
+     /
+     ├── index.html
+     ├── manifest.json
+     ├── service-worker.js
+     ├── assets/
+     ├── js/
+     └── pages/
+
+3. Enable GitHub Pages
+   - Go to repository "Settings" (tab with gear icon)
+   - Scroll down to "GitHub Pages" section
+   - Under "Source", select "main" branch
+   - Select "/ (root)" as the folder
+   - Click "Save"
+   - Wait a few minutes for deployment
+
+4. Configure Custom Domain (Optional)
+   - Still in "GitHub Pages" settings
+   - Under "Custom domain", enter your domain
+   - Click "Save"
+   - Add the required DNS records at your domain registrar
+   - Wait for HTTPS certificate to be issued (may take up to 24 hours)
+
+5. Verify Deployment
+   - GitHub will provide a URL like: https://username.github.io/repository-name
+   - Visit the URL and verify:
+     • All pages load correctly
+     • Fonts are working
+     • Images display properly
+     • PWA installs correctly
+     • Offline functionality works
+
+6. Updating Content
+   To update menu images or other content:
+   - Go to the repository on GitHub
+   - Navigate to the relevant folder (e.g., /assets/images/menu/)
+   - Click "Add file" > "Upload files"
+   - Drag and drop new images
+   - Add a commit message describing the update
+   - Click "Commit changes"
+   - Wait a few minutes for changes to deploy
+
+7. Important Notes
+   - The site URL will be public but not listed anywhere
+   - Updates may take a few minutes to appear due to caching
+   - Keep image sizes optimized for faster loading
+   - Regularly test PWA functionality after updates
+   - Back up menu images before replacing them
+
+8. Troubleshooting
+   If the site doesn't work after deployment:
+   - Check if all files uploaded successfully
+   - Verify the repository is public
+   - Ensure index.html is in the root directory
+   - Check browser console for errors
+   - Clear browser cache and service worker
+   - Wait 10-15 minutes for full deployment
+
+For technical support or questions:
+- Check GitHub Pages documentation: https://docs.github.com/pages
+- Review repository settings
+- Check deployment status in repository "Actions" tab 

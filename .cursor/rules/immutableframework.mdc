@@ -1,0 +1,91 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# 🚦 Immutable Development Rule Set
+
+This rule set is **always in effect** during the entire development lifecycle of the Crypto Arbitrage Bot, regardless of what is being coded, edited, or generated.
+
+It supersedes any ambiguity, omission, or error in a single prompt and guarantees the development stays aligned with the Product Requirements Document (PRD), Technical Specifications (Spec), Implementation Plan, and Technical Design Documents (TDD).
+
+---
+
+## 🔒 Core Rules (Immutable)
+
+1️⃣ **Document-Driven Development — Non-Negotiable**
+
+- ✅ Every coding task must be based strictly on:
+  - The **Implementation Plan (`Implementation_Plan.txt`)**
+  - The full **PRD (`Product_Requirements_Document(PRD)`)**
+
+- ❌ **No code must ever be written based on assumptions not backed by the documents.**
+
+---
+
+2️⃣ **Iterative Safe Process — Always Enforced**
+
+For **every task**, the following steps are mandatory:
+
+- 🔍 **Understand the Task:**
+  - Read the Implementation Plan and corresponding TDD.
+  - Cross-check functional/operational requirements in the PRD.
+
+- 📚 **Report Files Consulted:**
+  - Explicitly state which documents were read to understand the task.
+
+- ✅ **Confirm Understanding:**
+  - Briefly summarize the purpose, role, and requirements of the task.
+
+- 🚧 **Execute the Task:**
+  - Code exactly according to the documentation, folder structure, and conventions.
+
+- 🔎 **Verify Compliance:**
+  - Confirm alignment with:
+    - Implementation Plan
+    - PRD 
+
+- 🗒️ **Report Compliance:**
+  - Confirm the task was performed according to specifications.
+  - Note any issues, uncertainties, or deviations.
+
+- 🔁 **Repeat for the Next Task.**
+
+---
+
+3️⃣ **Folder Structure Integrity — Absolute**
+
+- ❌ **No file may be created, modified, or deleted** outside the approved folder structure defined in the Folder Structure Blueprint.
+
+---
+
+4️⃣ **No Overwriting of Working Code — Strict Policy**
+
+- ❌ Existing functional, tested code may not be overwritten unless:
+  - ✅ The Implementation Plan explicitly requires it.
+  - ✅ The change is fully verified and tested.
+  - ✅ The change is reported with justification.
+
+---
+
+5️⃣ **Mandatory Error Handling & Logging**
+
+- ✅ All code must include:
+  - Robust error handling.
+  - Retry mechanisms with backoff (`tenacity` or native patterns).
+  - Structured logging (`loguru`, `rich`, or standard logging).
+
+---
+
+
+## ✅ This Immutable Rule Set is always active.
+
+- It applies across:
+  - Every task.
+  - Every module.
+  - Every commit.
+  - Every iteration.
+- It cannot be bypassed, overridden, or ignored.
+
+---
+

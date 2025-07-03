@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0D1B2A">
+    <title>Ostra D'Ouro Menu</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- iOS PWA meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Restaurant Menu">
+</head>
+<body>
+    <!-- Video Background -->
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="assets/videos/mediterranean_waves_video.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- Content Overlay -->
+    <div class="content-overlay">
+        <!-- Logo -->
+        <div class="logo-container">
+            <img src="assets/images/logo.png" alt="Ostra D'Ouro Logo" class="logo">
+        </div>
+
+        <!-- Language Selection -->
+        <div class="language-selection">
+            <button class="language-button" onclick="window.location.href='pages/select-menu.html?lang=pt'">
+                Português
+            </button>
+            <button class="language-button" onclick="window.location.href='pages/select-menu.html?lang=en'">
+                English
+            </button>
+            <button class="language-button" onclick="window.location.href='pages/select-menu.html?lang=de'">
+                Deutsch
+            </button>
+            <button class="language-button" onclick="window.location.href='pages/select-menu.html?lang=fr'">
+                Français
+            </button>
+            <button class="language-button" onclick="window.location.href='pages/select-menu.html?lang=es'">
+                Español
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/register-sw.js"></script>
+    <script src="js/background-video.js"></script>
+    <script>
+        // Add hover and click effects
+        document.querySelectorAll('.language-button').forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                button.style.transform = 'scale(1.02)';
+            });
+
+            button.addEventListener('mouseleave', () => {
+                button.style.transform = 'scale(1)';
+            });
+
+            button.addEventListener('click', () => {
+                button.style.transform = 'scale(0.98)';
+                button.style.boxShadow = '0 0 15px rgba(212, 175, 55, 0.3)';
+            });
+        });
+    </script>
+</body>
+</html> 
