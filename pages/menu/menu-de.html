@@ -38,9 +38,43 @@
         
         const basePath = isLocalhost() ? '' : '/Menu/';
         
-        // Set correct image source (account for being in subdirectory)
-        const imagePath = isLocalhost() ? '../../assets/images/menu/de/menu_de-1.jpg' : `${basePath}assets/images/menu/de/menu_de-1.jpg`;
-        document.querySelector('.menu-image').src = imagePath;
+        // WebP fallback function - exactly like navigation.js
+        function loadImageWithFallback(imageBasePath, imageName, onSuccess, onError) {
+            const webpSrc = `${imageBasePath}${imageName.replace('.jpg', '.webp')}`;
+            const jpegSrc = `${imageBasePath}${imageName}`;
+            
+            const testWebP = new Image();
+            testWebP.onload = function() {
+                onSuccess(webpSrc, 'webp');
+            };
+            testWebP.onerror = function() {
+                const testJPEG = new Image();
+                testJPEG.onload = function() {
+                    onSuccess(jpegSrc, 'jpeg');
+                };
+                testJPEG.onerror = function() {
+                    onError();
+                };
+                testJPEG.src = jpegSrc;
+            };
+            testWebP.src = webpSrc;
+        }
+        
+        // Set correct image source with WebP fallback
+        const imageBasePath = isLocalhost() ? '../../assets/images/menu/de/' : `${basePath}assets/images/menu/de/`;
+        const imageName = 'menu_de-1.jpg';
+        
+        loadImageWithFallback(imageBasePath, imageName, 
+            function(src, format) {
+                document.querySelector('.menu-image').src = src;
+                console.log(`Menu DE: Loaded ${format} format - ${src}`);
+            },
+            function() {
+                console.error('Menu DE: Failed to load image in both WebP and JPEG formats');
+                // Fallback to JPEG as last resort
+                document.querySelector('.menu-image').src = imageBasePath + imageName;
+            }
+        );
         
         // Set correct navigation button URLs (use absolute paths for consistency)
         const homeUrl = isLocalhost() ? '/index.html' : `${basePath}index.html`;
