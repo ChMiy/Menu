@@ -167,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             totalPages = pageCount;
                             console.log(`Using cached page count: ${totalPages} for ${lang} ${menuType} (content verified)`);
                             sequentialPreload(currentPage);
+                            updateBackButton(); // Update back button after page count is known
                         } else {
                             // Content changed - clear cache and re-detect
                             console.log(`Content changed detected for ${lang} ${menuType} - clearing cache`);
@@ -190,6 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.log(`Hash verification failed for ${lang} ${menuType}, using cached count`);
                         totalPages = pageCount;
                         sequentialPreload(currentPage);
+                        updateBackButton(); // Update back button after page count is known
                     });
             } else {
                 // No cached hash - use cached count and generate hash for next time
@@ -207,6 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 
                 sequentialPreload(currentPage);
+                updateBackButton(); // Update back button after page count is known
             }
             return;
         }
@@ -266,6 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             sequentialPreload(currentPage);
+            updateBackButton(); // Update back button after page count is known
         }
         
         // Test pages in parallel with smart batching
@@ -365,6 +369,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
                     // Continue sequential preloading after navigation
                     sequentialPreload(page);
+                    
+                    // Show/hide back button based on current page
+                    updateBackButton();
         }, 300);
             },
             () => {
@@ -378,6 +385,65 @@ document.addEventListener('DOMContentLoaded', () => {
         const pageIndicator = document.querySelector('.page-indicator');
         if (pageIndicator) {
             pageIndicator.textContent = `Page ${page} of ${totalPages}`;
+        }
+    }
+
+    // Create back button
+    function createBackButton() {
+        // Check if button already exists
+        if (document.querySelector('.back-button')) {
+            console.log('Back button already exists');
+            return;
+        }
+        
+        console.log('Creating back button...');
+        
+        const backButton = document.createElement('button');
+        backButton.className = 'back-button';
+        
+        // Add appropriate class based on menu type
+        if (isWineMenu) {
+            backButton.classList.add('wine-page');
+        } else {
+            backButton.classList.add('menu-page');
+        }
+        
+        // Set text based on language
+        const texts = translations[lang] || translations.en;
+        backButton.textContent = texts.back;
+        
+        console.log(`Back button text set to: ${backButton.textContent}`);
+        
+        // Add click handler
+        backButton.addEventListener('click', () => {
+            const selectMenuUrl = isLocalhost() ? 
+                `../select-menu.html?lang=${lang}` : 
+                `${basePath}pages/select-menu.html?lang=${lang}`;
+            console.log(`Back button clicked, navigating to: ${selectMenuUrl}`);
+            window.location.href = selectMenuUrl;
+        });
+        
+        // Add to body
+        document.body.appendChild(backButton);
+        console.log('Back button added to body');
+    }
+
+    // Update back button visibility based on current page
+    function updateBackButton() {
+        const backButton = document.querySelector('.back-button');
+        if (!backButton) {
+            console.log('Back button not found');
+            return;
+        }
+        
+        console.log(`Back button update: currentPage=${currentPage}, totalPages=${totalPages}`);
+        
+        if (currentPage === totalPages) {
+            backButton.classList.add('show');
+            console.log('Back button shown');
+        } else {
+            backButton.classList.remove('show');
+            console.log('Back button hidden');
         }
     }
 
@@ -441,6 +507,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize page detection
     detectTotalPages();
+    
+    // Create back button
+    createBackButton();
 });
 
 // Clear detection cache (for service worker version changes)
@@ -464,23 +533,28 @@ function getLang() {
 const translations = {
     en: {
         home: '⬅ Home',
-        menuSelect: '📂 Menu Select'
+        menuSelect: '📂 Menu Select',
+        back: 'Back'
     },
     pt: {
         home: '⬅ Início',
-        menuSelect: '📂 Seleção Menu'
+        menuSelect: '📂 Seleção Menu',
+        back: 'Voltar'
     },
     fr: {
         home: '⬅ Accueil',
-        menuSelect: '📂 Sélection Menu'
+        menuSelect: '📂 Sélection Menu',
+        back: 'Retour'
     },
     es: {
         home: '⬅ Inicio',
-        menuSelect: '📂 Selección Menú'
+        menuSelect: '📂 Selección Menú',
+        back: 'Volver'
     },
     de: {
         home: '⬅ Start',
-        menuSelect: '📂 Menüauswahl'
+        menuSelect: '📂 Menüauswahl',
+        back: 'Zurück'
     }
 };
 

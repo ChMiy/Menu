@@ -489,6 +489,54 @@ body:has(.menu-container) img.menu-image {
     display: none !important;
 }
 
+/* Back button - appears only on last page */
+.back-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #2D4057;
+    border: 2px solid #D4AF37;
+    color: #D4AF37;
+    padding: 12px 24px;
+    font-family: 'EngraversGothic BT', Georgia, serif;
+    font-size: 16px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    display: none;
+    opacity: 0;
+}
+
+/* Menu page back button margin */
+.back-button.menu-page {
+    margin-right: 8%;
+}
+
+/* Wine page back button margin */
+.back-button.wine-page {
+    margin-right: 15%;
+}
+
+.back-button.show {
+    display: block;
+    opacity: 1;
+}
+
+.back-button:hover {
+    background: #D4AF37;
+    color: #0D1B2A;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+    transform: scale(1.05);
+}
+
+.back-button:active {
+    transform: scale(0.95);
+}
+
 /* Auto-hide controls after inactivity */
 @media (pointer: fine) {
     .nav-controls {
