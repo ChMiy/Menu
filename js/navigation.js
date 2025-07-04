@@ -7,7 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const lang = getLang();
     const path = window.location.pathname;
     const isWineMenu = path.includes('wine-');
-    const baseImagePath = `/assets/images/${isWineMenu ? 'wine' : 'menu'}/${lang}/`;
+    // Get base path for GitHub Pages (repository root)
+    const basePath = window.location.pathname.includes('/Menu/') ? 
+        window.location.pathname.split('/Menu/')[0] + '/Menu/' : 
+        '/Menu/';
+    const baseImagePath = `${basePath}assets/images/${isWineMenu ? 'wine' : 'menu'}/${lang}/`;
     
     let currentPage = 1;
     let totalPages = 1;
@@ -70,9 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (e.key === 'ArrowLeft' && currentPage > 1) {
             updateImage(currentPage - 1);
         } else if (e.key === 'Escape') {
-            window.location.href = `/pages/select-menu.html?lang=${lang}`;
+            window.location.href = `${basePath}pages/select-menu.html?lang=${lang}`;
         } else if (e.key === 'Home') {
-            window.location.href = '/index.html';
+            window.location.href = `${basePath}index.html`;
         }
     });
 
@@ -105,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Swipe right -> go back
                     if (currentPage === 1) {
                         // On first page, swipe right to go back to menu selection
-                        window.location.href = `/pages/select-menu.html?lang=${lang}`;
+                        window.location.href = `${basePath}pages/select-menu.html?lang=${lang}`;
                     } else {
                         // Go to previous page
                         updateImage(currentPage - 1);
@@ -165,12 +169,20 @@ function updateNavigationText() {
     
     if (homeButton) {
         homeButton.innerHTML = texts.home;
-        homeButton.onclick = () => location.href = '/index.html';
+        // Get base path for GitHub Pages
+        const basePath = window.location.pathname.includes('/Menu/') ? 
+            window.location.pathname.split('/Menu/')[0] + '/Menu/' : 
+            '/Menu/';
+        homeButton.onclick = () => location.href = `${basePath}index.html`;
     }
     
     if (menuSelectButton) {
         menuSelectButton.innerHTML = texts.menuSelect;
-        menuSelectButton.onclick = () => location.href = `/pages/select-menu.html?lang=${lang}`;
+        // Get base path for GitHub Pages
+        const basePath = window.location.pathname.includes('/Menu/') ? 
+            window.location.pathname.split('/Menu/')[0] + '/Menu/' : 
+            '/Menu/';
+        menuSelectButton.onclick = () => location.href = `${basePath}pages/select-menu.html?lang=${lang}`;
     }
 }
 

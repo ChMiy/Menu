@@ -45,7 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function navigateToHome() {
-        window.location.href = '/index.html';
+        // Get base path for GitHub Pages
+        const basePath = window.location.pathname.includes('/Menu/') ? 
+            window.location.pathname.split('/Menu/')[0] + '/Menu/' : 
+            '/Menu/';
+        window.location.href = `${basePath}index.html`;
     }
 
     // Get current language from URL
@@ -57,12 +61,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle menu panel clicks
     document.getElementById('food-menu').addEventListener('click', () => {
         const lang = getLang();
-        window.location.href = `/pages/menu/menu-${lang}.html?lang=${lang}`;
+        // Get base path for GitHub Pages
+        const basePath = window.location.pathname.includes('/Menu/') ? 
+            window.location.pathname.split('/Menu/')[0] + '/Menu/' : 
+            '/Menu/';
+        window.location.href = `${basePath}pages/menu/menu-${lang}.html?lang=${lang}`;
     });
 
     document.getElementById('wine-menu').addEventListener('click', () => {
         const lang = getLang();
-        window.location.href = `/pages/wine/wine-${lang}.html?lang=${lang}`;
+        // Get base path for GitHub Pages
+        const basePath = window.location.pathname.includes('/Menu/') ? 
+            window.location.pathname.split('/Menu/')[0] + '/Menu/' : 
+            '/Menu/';
+        window.location.href = `${basePath}pages/wine/wine-${lang}.html?lang=${lang}`;
     });
 
     // Add hover effects
