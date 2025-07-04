@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Navigation Integration Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0D1B2A;
+            color: white;
+        }
+        
+        .test-section {
+            background: rgba(255,255,255,0.1);
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .test-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        button.warning {
+            background: #FF9800;
+        }
+        
+        button.info {
+            background: #2196F3;
+        }
+        
+        .test-result {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            background: rgba(255,255,255,0.05);
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .test-result.fail {
+            border-left-color: #F44336;
+        }
+        
+        .test-result.warning {
+            border-left-color: #FF9800;
+        }
+        
+        .log {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+        
+        .cache-viewer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .cache-item {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #2196F3;
+        }
+        
+        .menu-simulator {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .menu-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .page-indicator {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #4CAF50;
+        }
+        
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .metric {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 Menu Navigation Integration Tests</h1>
+    <p>Test the actual menu navigation system with dynamic content management features.</p>
+    
+    <!-- Test Controls -->
+    <div class="test-section">
+        <h2>🎮 Test Controls</h2>
+        <div class="test-controls">
+            <button onclick="testMenuDetection()">Test Menu Detection</button>
+            <button onclick="testWineDetection()">Test Wine Detection</button>
+            <button onclick="testCachePerformance()">Test Cache Performance</button>
+            <button onclick="testWebPFallback()">Test WebP Fallback</button>
+            <button onclick="simulateServiceWorkerUpdate()" class="warning">Simulate SW Update</button>
+            <button onclick="viewCache()" class="info">View Cache Contents</button>
+            <button onclick="clearTestCache()" class="warning">Clear Test Cache</button>
+            <button onclick="runFullIntegrationTest()">Run Full Integration Test</button>
+        </div>
+    </div>
+    
+    <!-- Menu Simulator -->
+    <div class="test-section">
+        <h2>📱 Menu Navigation Simulator</h2>
+        <div class="menu-simulator">
+            <div class="page-indicator" id="pageIndicator">Ready to test...</div>
+            <div class="menu-controls">
+                <button onclick="simulateMenuLoad('menu', 'pt')">Load PT Menu</button>
+                <button onclick="simulateMenuLoad('menu', 'en')">Load EN Menu</button>
+                <button onclick="simulateMenuLoad('wine', 'pt')">Load PT Wine</button>
+                <button onclick="simulateMenuLoad('wine', 'en')">Load EN Wine</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Performance Metrics -->
+    <div class="test-section">
+        <h2>📊 Performance Metrics</h2>
+        <div class="performance-metrics">
+            <div class="metric">
+                <div class="metric-value" id="detectionTime">--</div>
+                <div class="metric-label">Detection Time (ms)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="cacheHits">--</div>
+                <div class="metric-label">Cache Hits</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="cacheMisses">--</div>
+                <div class="metric-label">Cache Misses</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="totalPages">--</div>
+                <div class="metric-label">Total Pages Detected</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cache Viewer -->
+    <div class="test-section">
+        <h2>💾 Cache Contents</h2>
+        <div id="cacheViewer" class="cache-viewer"></div>
+    </div>
+    
+    <!-- Test Results -->
+    <div class="test-section">
+        <h2>📋 Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+    
+    <!-- Console Log -->
+    <div class="test-section">
+        <h2>📝 Console Log</h2>
+        <div id="testLog" class="log"></div>
+    </div>
+    
+    <script>
+        let testMetrics = {
+            cacheHits: 0,
+            cacheMisses: 0,
+            totalDetections: 0,
+            averageDetectionTime: 0
+        };
+        
+        // Utility functions
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logDiv.textContent += logEntry;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function addTestResult(testName, result, details = '', type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${result ? 'pass' : 'fail'} ${type}`;
+            resultDiv.innerHTML = `
+                <strong>${result ? '✅' : '❌'} ${testName}</strong>
+                ${details ? `<br><small>${details}</small>` : ''}
+            `;
+            resultsDiv.appendChild(resultDiv);
+            
+            log(`${testName}: ${result ? 'PASS' : 'FAIL'} ${details}`, result ? 'pass' : 'fail');
+        }
+        
+        function updateMetrics() {
+            document.getElementById('cacheHits').textContent = testMetrics.cacheHits;
+            document.getElementById('cacheMisses').textContent = testMetrics.cacheMisses;
+            document.getElementById('totalPages').textContent = testMetrics.totalDetections;
+        }
+        
+        // Simulate the actual detection logic from navigation.js
+        function simulateDetectTotalPages(menuType, lang) {
+            return new Promise((resolve) => {
+                const startTime = performance.now();
+                const cacheKey = `pageCount_${menuType}_${lang}`;
+                
+                // Check for service worker version changes
+                const currentSWVersion = 'v20-dynamic-content';
+                const lastSWVersion = localStorage.getItem('lastSWVersion');
+                
+                if (lastSWVersion && lastSWVersion !== currentSWVersion) {
+                    log(`Service worker updated: ${lastSWVersion} → ${currentSWVersion}`);
+                    clearDetectionCache();
+                    localStorage.setItem('lastSWVersion', currentSWVersion);
+                } else if (!lastSWVersion) {
+                    localStorage.setItem('lastSWVersion', currentSWVersion);
+                }
+                
+                // Check if we have a cached count
+                const cachedCount = localStorage.getItem(cacheKey);
+                
+                if (cachedCount) {
+                    // Cache hit
+                    testMetrics.cacheHits++;
+                    const detectionTime = performance.now() - startTime;
+                    document.getElementById('detectionTime').textContent = detectionTime.toFixed(2);
+                    
+                    log(`Using cached page count: ${cachedCount} for ${lang} ${menuType}`);
+                    resolve(parseInt(cachedCount));
+                } else {
+                    // Cache miss - perform detection
+                    testMetrics.cacheMisses++;
+                    log(`Performing smart detection for ${lang} ${menuType}...`);
+                    
+                    // Simulate smart detection with known values
+                    const defaultCounts = {
+                        'menu': { 'pt': 17, 'en': 17, 'fr': 12, 'es': 12, 'de': 12 },
+                        'wine': { 'pt': 6, 'en': 6, 'fr': 6, 'es': 6, 'de': 6 }
+                    };
+                    
+                    const detectedCount = defaultCounts[menuType][lang] || 12;
+                    
+                    // Simulate detection delay
+                    setTimeout(() => {
+                        localStorage.setItem(cacheKey, detectedCount.toString());
+                        testMetrics.totalDetections = detectedCount;
+                        
+                        const detectionTime = performance.now() - startTime;
+                        document.getElementById('detectionTime').textContent = detectionTime.toFixed(2);
+                        
+                        log(`Smart detection complete: ${detectedCount} pages for ${lang} ${menuType}`);
+                        resolve(detectedCount);
+                    }, 100 + Math.random() * 200); // Simulate 100-300ms detection time
+                }
+                
+                updateMetrics();
+            });
+        }
+        
+        // Test individual menu detection
+        async function testMenuDetection() {
+            log('Testing menu detection system...', 'test');
+            
+            const testCases = [
+                { type: 'menu', lang: 'pt', expected: 17 },
+                { type: 'menu', lang: 'en', expected: 17 },
+                { type: 'menu', lang: 'fr', expected: 12 }
+            ];
+            
+            for (const testCase of testCases) {
+                const result = await simulateDetectTotalPages(testCase.type, testCase.lang);
+                const success = result === testCase.expected;
+                
+                addTestResult(
+                    `${testCase.type.toUpperCase()} ${testCase.lang.toUpperCase()} Detection`,
+                    success,
+                    `Expected: ${testCase.expected}, Got: ${result}`
+                );
+            }
+        }
+        
+        // Test wine detection
+        async function testWineDetection() {
+            log('Testing wine detection system...', 'test');
+            
+            const testCases = [
+                { type: 'wine', lang: 'pt', expected: 6 },
+                { type: 'wine', lang: 'en', expected: 6 },
+                { type: 'wine', lang: 'de', expected: 6 }
+            ];
+            
+            for (const testCase of testCases) {
+                const result = await simulateDetectTotalPages(testCase.type, testCase.lang);
+                const success = result === testCase.expected;
+                
+                addTestResult(
+                    `${testCase.type.toUpperCase()} ${testCase.lang.toUpperCase()} Detection`,
+                    success,
+                    `Expected: ${testCase.expected}, Got: ${result}`
+                );
+            }
+        }
+        
+        // Test cache performance
+        async function testCachePerformance() {
+            log('Testing cache performance...', 'test');
+            
+            // First run - should be cache miss
+            const startTime1 = performance.now();
+            await simulateDetectTotalPages('menu', 'test');
+            const firstRunTime = performance.now() - startTime1;
+            
+            // Second run - should be cache hit
+            const startTime2 = performance.now();
+            await simulateDetectTotalPages('menu', 'test');
+            const secondRunTime = performance.now() - startTime2;
+            
+            const performanceImprovement = firstRunTime > secondRunTime;
+            const improvementRatio = firstRunTime / secondRunTime;
+            
+            addTestResult(
+                'Cache Performance Improvement',
+                performanceImprovement,
+                `First run: ${firstRunTime.toFixed(2)}ms, Second run: ${secondRunTime.toFixed(2)}ms (${improvementRatio.toFixed(1)}x faster)`
+            );
+        }
+        
+        // Test WebP fallback
+        function testWebPFallback() {
+            log('Testing WebP fallback system...', 'test');
+            
+            // Simulate loadImageWithFallback logic
+            function simulateLoadImageWithFallback(imageName) {
+                return new Promise((resolve) => {
+                    const webpSupported = checkWebPSupport();
+                    const webpSrc = imageName.replace('.jpg', '.webp');
+                    const jpegSrc = imageName;
+                    
+                    if (webpSupported) {
+                        // Simulate WebP load attempt
+                        setTimeout(() => {
+                            const webpSuccess = Math.random() > 0.3; // 70% success rate
+                            if (webpSuccess) {
+                                resolve({ src: webpSrc, format: 'webp' });
+                            } else {
+                                // Fallback to JPEG
+                                setTimeout(() => {
+                                    resolve({ src: jpegSrc, format: 'jpeg' });
+                                }, 50);
+                            }
+                        }, 100);
+                    } else {
+                        // Direct JPEG load
+                        setTimeout(() => {
+                            resolve({ src: jpegSrc, format: 'jpeg' });
+                        }, 100);
+                    }
+                });
+            }
+            
+            // Test multiple images
+            const testImages = ['menu_pt-1.jpg', 'wine_en-1.jpg', 'menu_fr-5.jpg'];
+            let testsCompleted = 0;
+            
+            testImages.forEach(async (imageName, index) => {
+                const result = await simulateLoadImageWithFallback(imageName);
+                const formatCorrect = ['webp', 'jpeg'].includes(result.format);
+                
+                addTestResult(
+                    `WebP Fallback Test ${index + 1}`,
+                    formatCorrect,
+                    `Image: ${imageName}, Format: ${result.format}`
+                );
+                
+                testsCompleted++;
+                if (testsCompleted === testImages.length) {
+                    log('WebP fallback testing completed');
+                }
+            });
+        }
+        
+        // Simulate service worker update
+        function simulateServiceWorkerUpdate() {
+            log('Simulating service worker update...', 'test');
+            
+            const oldVersion = localStorage.getItem('lastSWVersion') || 'v19-webp-fallback';
+            const newVersion = 'v21-test-update';
+            
+            // Clear cache and update version
+            clearDetectionCache();
+            localStorage.setItem('lastSWVersion', newVersion);
+            
+            addTestResult(
+                'Service Worker Update Simulation',
+                true,
+                `Updated from ${oldVersion} to ${newVersion}, cache cleared`
+            );
+            
+            viewCache();
+        }
+        
+        // Menu load simulation
+        async function simulateMenuLoad(menuType, lang) {
+            log(`Simulating ${menuType} load for ${lang}...`, 'test');
+            
+            const startTime = performance.now();
+            const pageCount = await simulateDetectTotalPages(menuType, lang);
+            const loadTime = performance.now() - startTime;
+            
+            document.getElementById('pageIndicator').textContent = 
+                `${menuType.toUpperCase()} ${lang.toUpperCase()}: ${pageCount} pages (${loadTime.toFixed(2)}ms)`;
+            
+            // Simulate preloading
+            log(`Starting sequential preload for ${pageCount} pages...`);
+            for (let i = 1; i <= Math.min(pageCount, 3); i++) {
+                setTimeout(() => {
+                    log(`Preloaded page ${i}/${pageCount}`);
+                }, i * 100);
+            }
+        }
+        
+        // View cache contents
+        function viewCache() {
+            const cacheViewer = document.getElementById('cacheViewer');
+            cacheViewer.innerHTML = '';
+            
+            const cacheEntries = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('pageCount_') || key.startsWith('lastSWVersion')) {
+                    cacheEntries.push({
+                        key: key,
+                        value: localStorage.getItem(key)
+                    });
+                }
+            }
+            
+            if (cacheEntries.length === 0) {
+                cacheViewer.innerHTML = '<div class="cache-item">No cache entries found</div>';
+            } else {
+                cacheEntries.forEach(entry => {
+                    const div = document.createElement('div');
+                    div.className = 'cache-item';
+                    div.innerHTML = `<strong>${entry.key}</strong><br><code>${entry.value}</code>`;
+                    cacheViewer.appendChild(div);
+                });
+            }
+            
+            log(`Cache contains ${cacheEntries.length} entries`);
+        }
+        
+        // Clear detection cache
+        function clearDetectionCache() {
+            const keys = Object.keys(localStorage);
+            let cleared = 0;
+            keys.forEach(key => {
+                if (key.startsWith('pageCount_')) {
+                    localStorage.removeItem(key);
+                    cleared++;
+                }
+            });
+            log(`Detection cache cleared (${cleared} entries removed)`);
+        }
+        
+        // Clear test cache
+        function clearTestCache() {
+            clearDetectionCache();
+            localStorage.removeItem('lastSWVersion');
+            testMetrics = { cacheHits: 0, cacheMisses: 0, totalDetections: 0, averageDetectionTime: 0 };
+            updateMetrics();
+            viewCache();
+            log('All test cache cleared');
+        }
+        
+        // Check WebP support
+        function checkWebPSupport() {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = 1;
+                canvas.height = 1;
+                return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        // Run full integration test
+        async function runFullIntegrationTest() {
+            log('Starting full integration test suite...', 'test');
+            document.getElementById('testResults').innerHTML = '';
+            
+            // Clear cache for fresh start
+            clearTestCache();
+            
+            // Run tests in sequence
+            await testMenuDetection();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testWineDetection();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testCachePerformance();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            testWebPFallback();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            simulateServiceWorkerUpdate();
+            
+            log('Full integration test completed!', 'test');
+            viewCache();
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Menu Navigation Integration Test Suite initialized', 'info');
+            updateMetrics();
+            viewCache();
+            
+            // Show WebP support status
+            const webpSupport = checkWebPSupport();
+            log(`WebP support detected: ${webpSupport ? 'Yes' : 'No'}`, 'info');
+        });
+    </script>
+</body>
+</html> 

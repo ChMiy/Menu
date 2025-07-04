@@ -1,17 +1,17 @@
-// Cache configuration
+// Cache configuration - NAVIGATION FIX
 const CONFIG = {
-    version: 'v6',
-    staticCacheName: 'static-assets-v6',
-    imagesCacheName: 'images-v6',
-    documentsCacheName: 'documents-v6',
-    fontsCacheName: 'fonts-v6',
-    videoCacheName: 'videos-v6',
+    version: 'v22-navigation-fix',
+    staticCacheName: 'static-assets-v22-navigation-fix',
+    imagesCacheName: 'images-v22-navigation-fix',
+    documentsCacheName: 'documents-v22-navigation-fix',
+    fontsCacheName: 'fonts-v22-navigation-fix',
+    videoCacheName: 'videos-v22-navigation-fix',
     cacheNames: [
-        'static-assets-v6',
-        'images-v6',
-        'documents-v6',
-        'fonts-v6',
-        'videos-v6'
+        'static-assets-v22-navigation-fix',
+        'images-v22-navigation-fix',
+        'documents-v22-navigation-fix',
+        'fonts-v22-navigation-fix',
+        'videos-v22-navigation-fix'
     ]
 };
 
@@ -22,8 +22,8 @@ const CORE_ASSETS = [
     '/js/background-video.js',
     '/js/navigation.js',
     '/js/select-menu-navigation.js',
-    '/js/language.js',
-    '/js/seasonal-video.js'
+    '/js/register-sw.js',
+    '/js/background-asset-detector.js'
 ];
 
 const DOCUMENT_ASSETS = [
@@ -52,16 +52,6 @@ const IMAGE_ASSETS = [
     '/assets/images/logo.png',
     '/assets/images/backgrounds/food-menu-bg.jpg',
     '/assets/images/backgrounds/wine-menu-bg.jpg',
-    '/assets/images/menu/menu-en.jpg',
-    '/assets/images/menu/menu-pt.jpg',
-    '/assets/images/menu/menu-fr.jpg',
-    '/assets/images/menu/menu-es.jpg',
-    '/assets/images/menu/menu-de.jpg',
-    '/assets/images/wine/wine-en.jpg',
-    '/assets/images/wine/wine-pt.jpg',
-    '/assets/images/wine/wine-fr.jpg',
-    '/assets/images/wine/wine-es.jpg',
-    '/assets/images/wine/wine-de.jpg',
     '/assets/images/icons/icon-192.png',
     '/assets/images/icons/icon-512.png'
 ];
@@ -99,21 +89,29 @@ function getCacheName(resourceType) {
     }
 }
 
-// Generate menu page URLs for all languages
+// Generate menu page URLs for languages that have images (WebP + JPEG fallback)
 const generateMenuUrls = () => {
-    const languages = ['pt', 'en', 'fr', 'es', 'de'];
     const urls = [];
     
-    languages.forEach(lang => {
-        // Portuguese menu has 18 pages
-        if (lang === 'pt') {
-            for (let i = 1; i <= 18; i++) {
-                urls.push(`assets/images/menu/pt/menu_pt-${i}.jpg`);
-            }
-        } else {
-            urls.push(`assets/images/menu/${lang}/menu_${lang}-1.jpg`);
+    // Portuguese menu has 17 pages (WebP preferred, JPEG fallback)
+    for (let i = 1; i <= 17; i++) {
+        urls.push(`/assets/images/menu/pt/menu_pt-${i}.webp`);
+        urls.push(`/assets/images/menu/pt/menu_pt-${i}.jpg`);
+    }
+    
+    // English menu has 17 pages (WebP preferred, JPEG fallback)
+    for (let i = 1; i <= 17; i++) {
+        urls.push(`/assets/images/menu/en/menu_en-${i}.webp`);
+        urls.push(`/assets/images/menu/en/menu_en-${i}.jpg`);
+    }
+    
+    // All languages have wine images (6 pages each, WebP preferred, JPEG fallback)
+    const wineLanguages = ['pt', 'en', 'fr', 'es', 'de'];
+    wineLanguages.forEach(lang => {
+        for (let i = 1; i <= 6; i++) {
+            urls.push(`/assets/images/wine/${lang}/wine_${lang}-${i}.webp`);
+            urls.push(`/assets/images/wine/${lang}/wine_${lang}-${i}.jpg`);
         }
-        urls.push(`assets/images/wine/wine-${lang}.jpg`);
     });
 
     return urls;
@@ -189,4 +187,62 @@ self.addEventListener('fetch', event => {
                     });
             })
     );
+});
+
+// Handle messages from client (for cache invalidation and background detection)
+self.addEventListener('message', event => {
+    if (event.data && event.data.type === 'INVALIDATE_CACHE') {
+        console.log('Cache invalidation requested:', event.data.reason);
+        
+        // Enhanced cache clearing based on asset types
+        if (event.data.assets && Array.isArray(event.data.assets)) {
+            // Clear specific cache types based on changed assets
+            const cachesToClear = new Set();
+            
+            event.data.assets.forEach(assetUrl => {
+                const resourceType = getResourceType(assetUrl);
+                const cacheName = getCacheName(resourceType);
+                cachesToClear.add(cacheName);
+            });
+            
+            // Clear all affected caches
+            Promise.all(Array.from(cachesToClear).map(cacheName => 
+                caches.delete(cacheName)
+                    .then(() => console.log(`Cache cleared: ${cacheName}`))
+                    .catch(error => console.error(`Error clearing cache ${cacheName}:`, error))
+            ));
+        } else {
+            // Fallback: clear image cache (original behavior)
+            caches.delete(CONFIG.imagesCacheName)
+                .then(() => {
+                    console.log('Image cache cleared for new content');
+                })
+                .catch(error => {
+                    console.error('Error clearing image cache:', error);
+                });
+        }
+    }
+    
+    // Handle background detection requests
+    if (event.data && event.data.type === 'BACKGROUND_CHECK_REQUESTED') {
+        console.log('Background asset check requested');
+        // Send message to all clients to trigger background check
+        self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+                client.postMessage({
+                    type: 'BACKGROUND_CHECK_REQUESTED',
+                    timestamp: Date.now()
+                });
+            });
+        });
+    }
+    
+    // Handle status requests
+    if (event.data && event.data.type === 'GET_SW_STATUS') {
+        event.ports[0].postMessage({
+            version: CONFIG.version,
+            cacheNames: CONFIG.cacheNames,
+            timestamp: Date.now()
+        });
+    }
 }); 

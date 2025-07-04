@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Test Instructions - Content Hash Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0D1B2A;
+            color: white;
+            line-height: 1.6;
+        }
+        
+        .step {
+            background: rgba(255,255,255,0.1);
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .step h2 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        
+        .sub-step {
+            background: rgba(255,255,255,0.05);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 3px solid #2196F3;
+        }
+        
+        .expected {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 3px solid #4CAF50;
+        }
+        
+        .warning {
+            background: rgba(255, 152, 0, 0.2);
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 3px solid #FF9800;
+        }
+        
+        .code {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        .button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+        
+        .button:hover {
+            background: #45a049;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.ready {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 3px solid #4CAF50;
+        }
+        
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .checklist li {
+            padding: 5px 0;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .checklist li:before {
+            content: '✅';
+            position: absolute;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Live Testing Instructions</h1>
+    <h2>Content Hash Detection System - Real-World Verification</h2>
+    
+    <div class="status ready">
+        🎯 <strong>Goal:</strong> Verify that uploading new WebP files automatically invalidates cache and loads fresh content
+    </div>
+    
+    <!-- Prerequisites -->
+    <div class="step">
+        <h2>📋 Step 1: Prerequisites Check</h2>
+        <p>Before testing, ensure your system is ready:</p>
+        
+        <ul class="checklist">
+            <li>Content hash detection system implemented (v21-content-hash)</li>
+            <li>Service worker active and updated</li>
+            <li>Browser developer tools available</li>
+            <li>New WebP files ready for upload</li>
+        </ul>
+        
+        <div class="sub-step">
+            <strong>Verify Implementation:</strong>
+            <div class="code">1. Open Developer Tools (F12)
+2. Go to Console tab
+3. Navigate to any menu page
+4. Look for: "Smart detection complete" or "Using cached page count"</div>
+        </div>
+        
+        <div class="expected">
+            <strong>Expected:</strong> Console shows detection messages with no errors
+        </div>
+    </div>
+    
+    <!-- Baseline Test -->
+    <div class="step">
+        <h2>🔍 Step 2: Establish Baseline</h2>
+        <p>Create a baseline to compare against after changes:</p>
+        
+        <div class="sub-step">
+            <strong>2.1 Clear All Cache:</strong>
+            <div class="code">1. Open Developer Tools → Application tab
+2. Storage → Local Storage → Select your domain
+3. Delete all entries starting with "pageCount_" and "contentHash_"
+4. Go to Application → Service Workers → Update/Unregister if needed</div>
+        </div>
+        
+        <div class="sub-step">
+            <strong>2.2 First Load (Hash Generation):</strong>
+            <div class="code">1. Navigate to: pages/menu/menu-pt.html?lang=pt
+2. Watch Console for hash generation messages
+3. Check localStorage for new entries</div>
+        </div>
+        
+        <div class="expected">
+            <strong>Expected Console Output:</strong>
+            <div class="code">Smart detection complete: 17 pages for pt menu
+Content hash cached for pt menu: a1b2c3d4...</div>
+        </div>
+        
+        <div class="sub-step">
+            <strong>2.3 Second Load (Hash Verification):</strong>
+            <div class="code">1. Refresh the page (F5 - normal refresh, not hard refresh)
+2. Watch for hash comparison messages</div>
+        </div>
+        
+        <div class="expected">
+            <strong>Expected Console Output:</strong>
+            <div class="code">Using cached page count: 17 for pt menu (content verified)</div>
+        </div>
+    </div>
+    
+    <!-- Main Test -->
+    <div class="step">
+        <h2>🔄 Step 3: Content Change Test</h2>
+        <p>This is the main test - upload new content and verify automatic detection:</p>
+        
+        <div class="sub-step">
+            <strong>3.1 Upload New WebP Files:</strong>
+            <div class="code">1. Replace existing files with new WebP images:
+   - assets/images/menu/pt/menu_pt-1.webp
+   - assets/images/menu/pt/menu_pt-2.webp  
+   - assets/images/menu/pt/menu_pt-3.webp
+   (or whichever files you have new versions of)
+
+2. Ensure filenames are EXACTLY the same
+3. Ensure new files have different content/timestamps</div>
+        </div>
+        
+        <div class="warning">
+            <strong>Important:</strong> Don't clear browser cache yet! We want to test automatic detection.
+        </div>
+        
+        <div class="sub-step">
+            <strong>3.2 Test Automatic Detection:</strong>
+            <div class="code">1. Navigate to: pages/menu/menu-pt.html?lang=pt
+2. Watch Console carefully for hash comparison
+3. Look for cache invalidation messages</div>
+        </div>
+        
+        <div class="expected">
+            <strong>Expected Console Output (SUCCESS):</strong>
+            <div class="code">Content changed detected for pt menu - clearing cache
+Smart detection complete: 17 pages for pt menu  
+Content hash cached for pt menu: x1y2z3w4...</div>
+        </div>
+        
+        <div class="sub-step">
+            <strong>3.3 Verify New Content Loads:</strong>
+            <div class="code">1. Check that new images appear (not cached old ones)
+2. Verify WebP format is being used (Network tab)
+3. Confirm service worker cache was cleared</div>
+        </div>
+    </div>
+    
+    <!-- Advanced Testing -->
+    <div class="step">
+        <h2>🔬 Step 4: Advanced Verification</h2>
+        <p>Additional tests to ensure system robustness:</p>
+        
+        <div class="sub-step">
+            <strong>4.1 Network Tab Analysis:</strong>
+            <div class="code">1. Open Network tab in DevTools
+2. Navigate to menu page
+3. Look for:
+   - HEAD requests to .webp files (hash generation)
+   - Successful 200 responses for new WebP files
+   - Cache invalidation working</div>
+        </div>
+        
+        <div class="sub-step">
+            <strong>4.2 Service Worker Messages:</strong>
+            <div class="code">1. Open Application → Service Workers
+2. Check for active service worker (v21-content-hash)  
+3. Look for cache invalidation messages in Console</div>
+        </div>
+        
+        <div class="sub-step">
+            <strong>4.3 localStorage Verification:</strong>
+            <div class="code">1. Application → Local Storage
+2. Check for updated entries:
+   - contentHash_menu_pt (new hash value)
+   - pageCount_menu_pt (same count)
+   - lastSWVersion: "v21-content-hash"</div>
+        </div>
+    </div>
+    
+    <!-- Troubleshooting -->
+    <div class="step">
+        <h2>🚨 Step 5: Troubleshooting</h2>
+        <p>If tests don't work as expected:</p>
+        
+        <div class="sub-step">
+            <strong>Issue: No hash comparison happening</strong>
+            <div class="code">Possible causes:
+1. Service worker not updated → Hard refresh (Ctrl+Shift+R)
+2. JavaScript errors → Check Console for errors
+3. localStorage cleared → Repeat baseline test</div>
+        </div>
+        
+        <div class="sub-step">
+            <strong>Issue: Hash comparison but no cache clearing</strong>
+            <div class="code">Possible causes:
+1. Hash generated same despite new files → Check file timestamps
+2. Service worker message failed → Check SW is active
+3. Files not actually replaced → Verify upload was successful</div>
+        </div>
+        
+        <div class="sub-step">
+            <strong>Issue: Still loading old cached images</strong>
+            <div class="code">Solutions:
+1. Hard refresh once (Ctrl+Shift+R) to force SW update
+2. Check Network tab - should show requests for new files
+3. Verify service worker cache was actually cleared</div>
+        </div>
+    </div>
+    
+    <!-- Success Criteria -->
+    <div class="step">
+        <h2>🎉 Step 6: Success Criteria</h2>
+        <p>Test is successful if you see ALL of these:</p>
+        
+        <ul class="checklist">
+            <li>Console shows "Content changed detected" message</li>
+            <li>New WebP files load instead of old cached ones</li>
+            <li>Hash values change in localStorage</li>
+            <li>Service worker cache invalidation triggered</li>
+            <li>Subsequent visits load new content from cache</li>
+            <li>System works silently with no manual intervention</li>
+        </ul>
+        
+        <div class="expected">
+            <strong>🎯 Ultimate Success:</strong> Upload new WebP files → Navigate to menu → New content appears automatically without any manual cache clearing!
+        </div>
+    </div>
+    
+    <!-- Test Tools -->
+    <div class="step">
+        <h2>🛠️ Test Tools Available</h2>
+        <p>Use these tools for additional testing:</p>
+        
+        <a href="content-hash-tests.html" class="button">Content Hash Tests</a>
+        <a href="integration-tests.html" class="button">Integration Tests</a>
+        <a href="performance-comparison-tests.html" class="button">Performance Tests</a>
+        
+        <div class="sub-step">
+            <strong>Quick Test Commands (Console):</strong>
+            <div class="code">// Check current hashes
+Object.keys(localStorage).filter(k => k.startsWith('contentHash_'))
+
+// Clear specific menu cache  
+localStorage.removeItem('contentHash_menu_pt');
+localStorage.removeItem('pageCount_menu_pt');
+
+// Check service worker version
+localStorage.getItem('lastSWVersion')</div>
+        </div>
+    </div>
+    
+    <div class="status ready">
+        <strong>🚀 Ready to Test!</strong> Follow the steps above to verify your content hash detection system works perfectly with your new WebP uploads.
+    </div>
+    
+    <script>
+        // Add some interactive functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 Live Test Instructions loaded');
+            console.log('📋 Ready to test content hash detection system');
+            console.log('🎯 Goal: Verify automatic cache invalidation works');
+        });
+        
+        // Helper function to check localStorage
+        function checkContentHashes() {
+            const hashes = {};
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('contentHash_')) {
+                    hashes[key] = localStorage.getItem(key);
+                }
+            });
+            console.table(hashes);
+            return hashes;
+        }
+        
+        // Helper function to clear test data
+        function clearTestData() {
+            const keys = Object.keys(localStorage);
+            let cleared = 0;
+            keys.forEach(key => {
+                if (key.startsWith('contentHash_') || key.startsWith('pageCount_')) {
+                    localStorage.removeItem(key);
+                    cleared++;
+                }
+            });
+            console.log(`🧹 Cleared ${cleared} test entries`);
+            return cleared;
+        }
+        
+        // Make functions available globally for console use
+        window.checkContentHashes = checkContentHashes;
+        window.clearTestData = clearTestData;
+        
+        console.log('💡 Helper functions available:');
+        console.log('   checkContentHashes() - View current hashes');
+        console.log('   clearTestData() - Clear all test data');
+    </script>
+</body>
+</html> 

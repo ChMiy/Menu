@@ -9,6 +9,31 @@ document.addEventListener('DOMContentLoaded', () => {
     let touchStartY = 0;
     let touchEndY = 0;
 
+    // Robust localhost detection
+    function isLocalhost() {
+        const hostname = window.location.hostname;
+        const port = window.location.port;
+        
+        // Check for localhost conditions
+        const isLocalIP = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+        const isLocalPort = port === '8000' || port === '3000' || port === '8080' || port === '5000';
+        const isFileProtocol = window.location.protocol === 'file:';
+        
+        // Also check if we're NOT on GitHub Pages domain
+        const isGitHubPages = hostname.includes('github.io') || hostname.includes('githubusercontent.com');
+        
+        return (isLocalIP && isLocalPort) || isFileProtocol || (!isGitHubPages && port);
+    }
+
+    const basePath = isLocalhost() ? '' : '/Menu/';
+    
+    console.log('Select Menu Debug:', {
+        hostname: window.location.hostname,
+        port: window.location.port,
+        isLocalhost: isLocalhost(),
+        basePath: basePath
+    });
+
     // Touch navigation
     document.addEventListener('touchstart', (e) => {
         touchStartX = e.touches[0].clientX;
@@ -45,10 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function navigateToHome() {
-        // Get base path for GitHub Pages
-        const basePath = window.location.pathname.includes('/Menu/') ? 
-            window.location.pathname.split('/Menu/')[0] + '/Menu/' : 
-            '/Menu/';
         window.location.href = `${basePath}index.html`;
     }
 
@@ -61,19 +82,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle menu panel clicks
     document.getElementById('food-menu').addEventListener('click', () => {
         const lang = getLang();
-        // Get base path for GitHub Pages
-        const basePath = window.location.pathname.includes('/Menu/') ? 
-            window.location.pathname.split('/Menu/')[0] + '/Menu/' : 
-            '/Menu/';
         window.location.href = `${basePath}pages/menu/menu-${lang}.html?lang=${lang}`;
     });
 
     document.getElementById('wine-menu').addEventListener('click', () => {
         const lang = getLang();
-        // Get base path for GitHub Pages
-        const basePath = window.location.pathname.includes('/Menu/') ? 
-            window.location.pathname.split('/Menu/')[0] + '/Menu/' : 
-            '/Menu/';
         window.location.href = `${basePath}pages/wine/wine-${lang}.html?lang=${lang}`;
     });
 

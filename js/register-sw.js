@@ -8,15 +8,13 @@ if ('serviceWorker' in navigator) {
             .then(registration => {
                 console.log('ServiceWorker registration successful');
                 
-                // Handle updates
+                // Handle updates silently in background
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            // New content is available, refresh to update
-                            if (confirm('New content is available! Would you like to update?')) {
-                                window.location.reload();
-                            }
+                            // New content is available, update silently
+                            console.log('New content cached, will be available on next page load');
                         }
                     });
                 });

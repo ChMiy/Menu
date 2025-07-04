@@ -97,6 +97,155 @@
         </div>
     </div>
 
-    <script src="../js/select-menu-navigation.js"></script>
+    <script src="../js/background-asset-detector.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // SINGLE ROBUST LOCALHOST DETECTION FUNCTION
+            function isLocalhost() {
+                const hostname = window.location.hostname;
+                const port = window.location.port;
+                
+                // Check for localhost conditions
+                const isLocalIP = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+                const isLocalPort = port === '8000' || port === '3000' || port === '8080' || port === '5000';
+                const isFileProtocol = window.location.protocol === 'file:';
+                
+                // Also check if we're NOT on GitHub Pages domain
+                const isGitHubPages = hostname.includes('github.io') || hostname.includes('githubusercontent.com');
+                
+                return (isLocalIP && isLocalPort) || isFileProtocol || (!isGitHubPages && port);
+            }
+
+            const basePath = isLocalhost() ? '' : '/Menu/';
+            
+            console.log('=== SELECT MENU FIXED DEBUG ===');
+            console.log('hostname:', window.location.hostname);
+            console.log('port:', window.location.port);
+            console.log('isLocalhost():', isLocalhost());
+            console.log('basePath:', basePath);
+            console.log('timestamp:', new Date().toISOString());
+            console.log('================================');
+
+            // Get current language from URL
+            function getLang() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get('lang') || 'en';
+            }
+
+            // Handle menu panel clicks
+            document.getElementById('food-menu').addEventListener('click', () => {
+                const lang = getLang();
+                // Since we're already in /pages/, we need to adjust the path
+                const menuUrl = isLocalhost() ? `menu/menu-${lang}.html?lang=${lang}` : `${basePath}pages/menu/menu-${lang}.html?lang=${lang}`;
+                console.log('=== FOOD MENU CLICK ===');
+                console.log('basePath:', basePath);
+                console.log('lang:', lang);
+                console.log('isLocalhost():', isLocalhost());
+                console.log('menuUrl:', menuUrl);
+                console.log('=======================');
+                window.location.href = menuUrl;
+            });
+
+            document.getElementById('wine-menu').addEventListener('click', () => {
+                const lang = getLang();
+                // Since we're already in /pages/, we need to adjust the path
+                const wineUrl = isLocalhost() ? `wine/wine-${lang}.html?lang=${lang}` : `${basePath}pages/wine/wine-${lang}.html?lang=${lang}`;
+                console.log('=== WINE MENU CLICK ===');
+                console.log('basePath:', basePath);
+                console.log('lang:', lang);
+                console.log('isLocalhost():', isLocalhost());
+                console.log('wineUrl:', wineUrl);
+                console.log('=======================');
+                window.location.href = wineUrl;
+            });
+
+            // Touch navigation
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchEndX = 0;
+            let touchEndY = 0;
+
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].clientX;
+                touchEndY = e.changedTouches[0].clientY;
+                handleSwipe();
+            }, { passive: true });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'Escape' || e.key === 'Home') {
+                    navigateToHome();
+                }
+            });
+
+            function handleSwipe() {
+                const swipeDistanceX = touchEndX - touchStartX;
+                const swipeDistanceY = touchEndY - touchStartY;
+                const minSwipeDistance = 50;
+
+                // Only handle horizontal swipes if they're more horizontal than vertical
+                if (Math.abs(swipeDistanceX) > Math.abs(swipeDistanceY)) {
+                    if (Math.abs(swipeDistanceX) > minSwipeDistance) {
+                        if (swipeDistanceX > 0) {
+                            // Swipe right -> go back to home
+                            navigateToHome();
+                        }
+                    }
+                }
+            }
+
+            function navigateToHome() {
+                // Since we're already in /pages/, we need to go up one level for localhost
+                const homeUrl = isLocalhost() ? '../index.html' : `${basePath}index.html`;
+                window.location.href = homeUrl;
+            }
+
+            // Add hover effects
+            function addHoverEffect(element) {
+                element.addEventListener('mouseenter', () => {
+                    const img = element.querySelector('img');
+                    if (img) {
+                        img.style.transform = 'scale(1.05)';
+                        img.style.transition = 'transform 0.5s ease';
+                    }
+                });
+
+                element.addEventListener('mouseleave', () => {
+                    const img = element.querySelector('img');
+                    if (img) {
+                        img.style.transform = 'scale(1)';
+                    }
+                });
+            }
+
+            // Add touch effects
+            function addTouchEffect(element) {
+                element.addEventListener('touchstart', () => {
+                    const img = element.querySelector('img');
+                    if (img) {
+                        img.style.transform = 'scale(1.02)';
+                    }
+                });
+
+                element.addEventListener('touchend', () => {
+                    const img = element.querySelector('img');
+                    if (img) {
+                        img.style.transform = 'scale(1)';
+                    }
+                });
+            }
+
+            // Initialize effects
+            document.querySelectorAll('.menu-panel').forEach(panel => {
+                addHoverEffect(panel);
+                addTouchEffect(panel);
+            });
+        });
+    </script>
 </body>
 </html> 

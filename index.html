@@ -7,6 +7,7 @@
     <title>Ostra D'Ouro Menu</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
     <!-- iOS PWA meta tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -29,19 +30,19 @@
 
         <!-- Language Selection -->
         <div class="language-selection">
-            <button class="language-button" onclick="window.location.href='pages/select-menu.html?lang=pt'">
+            <button class="language-button" onclick="navigateToMenu('pt')">
                 Português
             </button>
-            <button class="language-button" onclick="window.location.href='pages/select-menu.html?lang=en'">
+            <button class="language-button" onclick="navigateToMenu('en')">
                 English
             </button>
-            <button class="language-button" onclick="window.location.href='pages/select-menu.html?lang=de'">
+            <button class="language-button" onclick="navigateToMenu('de')">
                 Deutsch
             </button>
-            <button class="language-button" onclick="window.location.href='pages/select-menu.html?lang=fr'">
+            <button class="language-button" onclick="navigateToMenu('fr')">
                 Français
             </button>
-            <button class="language-button" onclick="window.location.href='pages/select-menu.html?lang=es'">
+            <button class="language-button" onclick="navigateToMenu('es')">
                 Español
             </button>
         </div>
@@ -50,7 +51,36 @@
     <!-- Scripts -->
     <script src="js/register-sw.js"></script>
     <script src="js/background-video.js"></script>
+    <script src="js/background-asset-detector.js"></script>
     <script>
+        // Robust localhost detection
+        function isLocalhost() {
+            const hostname = window.location.hostname;
+            const port = window.location.port;
+            
+            // Check for localhost conditions
+            const isLocalIP = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+            const isLocalPort = port === '8000' || port === '3000' || port === '8080' || port === '5000';
+            const isFileProtocol = window.location.protocol === 'file:';
+            
+            // Also check if we're NOT on GitHub Pages domain
+            const isGitHubPages = hostname.includes('github.io') || hostname.includes('githubusercontent.com');
+            
+            return (isLocalIP && isLocalPort) || isFileProtocol || (!isGitHubPages && port);
+        }
+        
+        function navigateToMenu(lang) {
+            const basePath = isLocalhost() ? '' : '/Menu/';
+            window.location.href = `${basePath}pages/select-menu.html?lang=${lang}`;
+        }
+        
+        console.log('Index Debug:', {
+            hostname: window.location.hostname,
+            port: window.location.port,
+            isLocalhost: isLocalhost(),
+            basePath: isLocalhost() ? '' : '/Menu/'
+        });
+
         // Add hover and click effects
         document.querySelectorAll('.language-button').forEach(button => {
             button.addEventListener('mouseenter', () => {

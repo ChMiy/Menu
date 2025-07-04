@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Hash Detection Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0D1B2A;
+            color: white;
+        }
+        
+        .test-section {
+            background: rgba(255,255,255,0.1);
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .test-result {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            background: rgba(255,255,255,0.05);
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .test-result.fail {
+            border-left-color: #F44336;
+        }
+        
+        .test-result.warning {
+            border-left-color: #FF9800;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        .warning {
+            background: #FF9800;
+        }
+        
+        .error {
+            background: #F44336;
+        }
+        
+        .log {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+        
+        .hash-display {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        
+        .cache-viewer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .cache-item {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Content Hash Detection Tests</h1>
+    <p>Test the new content hash detection system for automatic cache invalidation.</p>
+    
+    <!-- Test Controls -->
+    <div class="test-section">
+        <h2>🎮 Test Controls</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="testHashGeneration()">Test Hash Generation</button>
+        <button onclick="testHashComparison()">Test Hash Comparison</button>
+        <button onclick="testCacheInvalidation()">Test Cache Invalidation</button>
+        <button onclick="simulateContentChange()" class="warning">Simulate Content Change</button>
+        <button onclick="clearAllTestData()" class="error">Clear All Test Data</button>
+    </div>
+    
+    <!-- Hash Display -->
+    <div class="test-section">
+        <h2>🔐 Current Content Hashes</h2>
+        <div id="hashDisplay" class="cache-viewer"></div>
+    </div>
+    
+    <!-- Test Results -->
+    <div class="test-section">
+        <h2>📋 Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+    
+    <!-- Console Log -->
+    <div class="test-section">
+        <h2>📝 Console Log</h2>
+        <div id="testLog" class="log"></div>
+    </div>
+    
+    <script>
+        // Copy the hash generation functions from navigation.js for testing
+        async function generateContentHash(menuType, lang, pageCount) {
+            const samplePages = Math.min(3, pageCount);
+            const hashes = [];
+            
+            for (let page = 1; page <= samplePages; page++) {
+                try {
+                    const hash = await getImageHash(menuType, lang, page);
+                    hashes.push(hash);
+                } catch (error) {
+                    console.log(`Hash generation failed for page ${page}, using fallback`);
+                    hashes.push(`fallback-${page}`);
+                }
+            }
+            
+            return hashes.join('-');
+        }
+        
+        function getImageHash(menuType, lang, page) {
+            return new Promise((resolve, reject) => {
+                const basePath = window.location.hostname === 'localhost' ? 
+                    '../assets/images/' : '/MenuWebsite/assets/images/';
+                const imageName = `${menuType}_${lang}-${page}.jpg`;
+                const webpSrc = `${basePath}${menuType}/${lang}/${imageName.replace('.jpg', '.webp')}`;
+                const jpegSrc = `${basePath}${menuType}/${lang}/${imageName}`;
+                
+                const generateHash = (url) => {
+                    return fetch(url, { method: 'HEAD' })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Not found');
+                            const lastModified = response.headers.get('last-modified') || '';
+                            const contentLength = response.headers.get('content-length') || '';
+                            const etag = response.headers.get('etag') || '';
+                            const hashString = `${lastModified}-${contentLength}-${etag}`;
+                            return hashString.substring(0, 16);
+                        });
+                };
+                
+                generateHash(webpSrc)
+                    .then(hash => resolve(hash))
+                    .catch(() => {
+                        generateHash(jpegSrc)
+                            .then(hash => resolve(hash))
+                            .catch(() => reject(new Error('Both formats failed')));
+                    });
+            });
+        }
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logDiv.textContent += logEntry;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function addTestResult(testName, result, details = '') {
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${result ? 'pass' : 'fail'}`;
+            resultDiv.innerHTML = `
+                <strong>${result ? '✅' : '❌'} ${testName}</strong>
+                ${details ? `<br><small>${details}</small>` : ''}
+            `;
+            resultsDiv.appendChild(resultDiv);
+            
+            log(`${testName}: ${result ? 'PASS' : 'FAIL'} ${details}`, result ? 'pass' : 'fail');
+        }
+        
+        function displayHashes() {
+            const hashDisplay = document.getElementById('hashDisplay');
+            hashDisplay.innerHTML = '';
+            
+            const hashes = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('contentHash_')) {
+                    hashes.push({
+                        key: key,
+                        value: localStorage.getItem(key)
+                    });
+                }
+            }
+            
+            if (hashes.length === 0) {
+                hashDisplay.innerHTML = '<div class="cache-item">No content hashes found</div>';
+            } else {
+                hashes.forEach(hash => {
+                    const div = document.createElement('div');
+                    div.className = 'cache-item';
+                    div.innerHTML = `
+                        <strong>${hash.key}</strong><br>
+                        <code>${hash.value}</code>
+                    `;
+                    hashDisplay.appendChild(div);
+                });
+            }
+        }
+        
+        // Test 1: Hash Generation
+        async function testHashGeneration() {
+            log('Testing hash generation for various menus...', 'test');
+            
+            const testCases = [
+                { type: 'menu', lang: 'pt', pages: 17 },
+                { type: 'menu', lang: 'en', pages: 17 },
+                { type: 'wine', lang: 'pt', pages: 6 }
+            ];
+            
+            for (const testCase of testCases) {
+                try {
+                    const hash = await generateContentHash(testCase.type, testCase.lang, testCase.pages);
+                    const hashValid = hash && hash.length > 0 && !hash.includes('undefined');
+                    
+                    addTestResult(
+                        `Hash Generation - ${testCase.type} ${testCase.lang}`,
+                        hashValid,
+                        `Hash: ${hash.substring(0, 20)}...`
+                    );
+                    
+                    if (hashValid) {
+                        // Store for comparison testing
+                        localStorage.setItem(`test_contentHash_${testCase.type}_${testCase.lang}`, hash);
+                    }
+                } catch (error) {
+                    addTestResult(
+                        `Hash Generation - ${testCase.type} ${testCase.lang}`,
+                        false,
+                        `Error: ${error.message}`
+                    );
+                }
+            }
+            
+            displayHashes();
+        }
+        
+        // Test 2: Hash Comparison
+        async function testHashComparison() {
+            log('Testing hash comparison for change detection...', 'test');
+            
+            const testCases = [
+                { type: 'menu', lang: 'pt', pages: 17 },
+                { type: 'wine', lang: 'pt', pages: 6 }
+            ];
+            
+            for (const testCase of testCases) {
+                try {
+                    // Generate current hash
+                    const currentHash = await generateContentHash(testCase.type, testCase.lang, testCase.pages);
+                    
+                    // Get stored hash
+                    const storedHash = localStorage.getItem(`test_contentHash_${testCase.type}_${testCase.lang}`);
+                    
+                    if (storedHash) {
+                        const hashesMatch = currentHash === storedHash;
+                        
+                        addTestResult(
+                            `Hash Comparison - ${testCase.type} ${testCase.lang}`,
+                            hashesMatch,
+                            `Current: ${currentHash.substring(0, 10)}..., Stored: ${storedHash.substring(0, 10)}...`
+                        );
+                    } else {
+                        addTestResult(
+                            `Hash Comparison - ${testCase.type} ${testCase.lang}`,
+                            false,
+                            'No stored hash found for comparison'
+                        );
+                    }
+                } catch (error) {
+                    addTestResult(
+                        `Hash Comparison - ${testCase.type} ${testCase.lang}`,
+                        false,
+                        `Error: ${error.message}`
+                    );
+                }
+            }
+        }
+        
+        // Test 3: Cache Invalidation Logic
+        function testCacheInvalidation() {
+            log('Testing cache invalidation logic...', 'test');
+            
+            // Test service worker message sending
+            if ('serviceWorker' in navigator) {
+                const swAvailable = navigator.serviceWorker.controller !== null;
+                
+                addTestResult(
+                    'Service Worker Available',
+                    swAvailable,
+                    swAvailable ? 'Service worker is active' : 'Service worker not active'
+                );
+                
+                if (swAvailable) {
+                    // Test sending cache invalidation message
+                    try {
+                        navigator.serviceWorker.controller.postMessage({
+                            type: 'INVALIDATE_CACHE',
+                            reason: 'Test cache invalidation'
+                        });
+                        
+                        addTestResult(
+                            'Cache Invalidation Message',
+                            true,
+                            'Successfully sent cache invalidation message'
+                        );
+                    } catch (error) {
+                        addTestResult(
+                            'Cache Invalidation Message',
+                            false,
+                            `Error: ${error.message}`
+                        );
+                    }
+                }
+            } else {
+                addTestResult(
+                    'Service Worker Support',
+                    false,
+                    'Service worker not supported'
+                );
+            }
+        }
+        
+        // Test 4: Simulate Content Change
+        function simulateContentChange() {
+            log('Simulating content change detection...', 'test');
+            
+            const testMenuType = 'menu';
+            const testLang = 'pt';
+            const hashKey = `contentHash_${testMenuType}_${testLang}`;
+            
+            // Get current hash
+            const currentHash = localStorage.getItem(hashKey);
+            
+            if (currentHash) {
+                // Simulate a changed hash
+                const simulatedNewHash = currentHash + '-modified';
+                
+                // Store the modified hash
+                localStorage.setItem(`${hashKey}_modified`, simulatedNewHash);
+                
+                // Compare hashes
+                const hashesMatch = currentHash === simulatedNewHash;
+                
+                addTestResult(
+                    'Content Change Simulation',
+                    !hashesMatch,
+                    `Original: ${currentHash.substring(0, 10)}..., Modified: ${simulatedNewHash.substring(0, 10)}...`
+                );
+                
+                if (!hashesMatch) {
+                    // Simulate cache invalidation
+                    log('Content change detected - would trigger cache invalidation', 'warning');
+                    
+                    addTestResult(
+                        'Cache Invalidation Trigger',
+                        true,
+                        'Cache invalidation would be triggered due to hash mismatch'
+                    );
+                }
+            } else {
+                addTestResult(
+                    'Content Change Simulation',
+                    false,
+                    'No existing hash found to compare against'
+                );
+            }
+            
+            displayHashes();
+        }
+        
+        // Clear all test data
+        function clearAllTestData() {
+            log('Clearing all test data...', 'warning');
+            
+            const keys = Object.keys(localStorage);
+            let cleared = 0;
+            
+            keys.forEach(key => {
+                if (key.startsWith('test_contentHash_') || key.startsWith('contentHash_')) {
+                    localStorage.removeItem(key);
+                    cleared++;
+                }
+            });
+            
+            addTestResult(
+                'Test Data Cleanup',
+                true,
+                `Cleared ${cleared} test entries`
+            );
+            
+            displayHashes();
+        }
+        
+        // Run all tests
+        async function runAllTests() {
+            document.getElementById('testResults').innerHTML = '';
+            log('Starting comprehensive content hash detection tests...', 'test');
+            
+            await testHashGeneration();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testHashComparison();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            testCacheInvalidation();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            simulateContentChange();
+            
+            log('All content hash detection tests completed!', 'test');
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Content Hash Detection Test Suite initialized', 'info');
+            displayHashes();
+        });
+    </script>
+</body>
+</html> 

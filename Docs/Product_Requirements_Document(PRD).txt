@@ -1,0 +1,173 @@
+Product Requirements Document (PRD)
+Project: Restaurant Landing Page for Tablet Use
+Platform: GitHub Pages (Static Hosting)
+Format: HTML + CSS + JS + PWA
+Target Device: In-house Android tablets
+Security: Private URL only (no authentication)
+Design Tier: High-end, luxury visual style
+Menus: Food Menu and Wine Menu in four languages
+Navigation: Intuitive but discreet
+________________________________________
+1. 🎯 Purpose
+To deliver a high-class, tablet-optimized, multilingual PWA for an upscale restaurant located in a prestigious area. The experience must be fully offline-capable, visually refined, responsive, and intuitive to use for guests viewing menus on-site. No public access. No unnecessary UI chrome.
+________________________________________
+2. 🌐 Hosting
+•	Static files hosted on GitHub Pages.
+•	URL access restricted by secrecy (not publicized).
+•	No server-side functionality.
+•	All content cached for offline use (PWA).
+•	Centralized updates for all tablets via GitHub repo.
+________________________________________
+3. 🧱 Site Architecture & Page Flow
+Entry Point: index.html
+•	Language Selection Screen
+→ select-menu.html?lang=xx
+•	After selecting language, guest is redirected to a page where they choose:
+o	🍽️ Menu
+o	🍷 Wine Menu
+→ menu-[lang].html
+•	Fullscreen Menu for selected language
+→ wine-[lang].html
+•	Fullscreen Wine Menu for selected language
+Folder Structure:
+/
+├── index.html                     # Language selection
+├── select-menu.html              # Menu/Wine Menu selection
+├── menu-en.html
+├── menu-pt.html
+├── menu-fr.html
+├── menu-es.html
+├── wine-en.html
+├── wine-pt.html
+├── wine-fr.html
+├── wine-es.html
+├── manifest.json                 # PWA
+├── service-worker.js            # PWA
+├── /assets/
+│   ├── menu-en.jpg               # Fullscreen menu images
+│   ├── wine-en.jpg
+│   ├── ...
+│   ├── logo.png
+│   └── style.css
+________________________________________
+4. 🎨 Visual Design — Styling & Identity
+Color Palette
+Element	Color	Hex
+Primary background	Deep blue	#0D1B2A
+Accent (highlight)	Elegant gold	#D4AF37
+Neutral background	Soft beige/crème	#F5F5DC
+Text (on dark bg)	Light crème/gold	#F7F1E1
+•	Dark navy blue should dominate background screens.
+•	Gold should be used for text highlights, borders, and decorative accents.
+•	Beige/crème may be used for minimal background elements or logo contrast.
+Typography
+•	Main font: EngraversGothic BT (The font EngraversGothic BT must be fully embedded via web font (e.g. @font-face) so that it is loaded directly from the site, requiring no installation on the tablets. The font files (.woff, .woff2) must be included in the /assets/fonts/ folder and referenced in CSS.)
+•	Fallbacks: Georgia, serif
+•	All headings, menu labels, and language buttons should use this font.
+________________________________________
+5. 🖼️ Language Selection Page (index.html)
+•	Full-screen layout, centered both vertically and horizontally.
+•	Five large language buttons with flag icons and language names (PT, EN, FR, ES, DE).
+•	Button styling:
+o	Background: transparent
+o	Border: 2px solid #D4AF37 (gold)
+o	Text: uppercase, bold, EngraversGothic BT, gold
+o	Hover: slight glow or soft inner shadow effect
+•	Background: solid deep blue.
+•	Logo (if provided): centered above the buttons.
+•	The restaurant logo must be loaded from /assets/logo.png and referenced in the HTML using a standard <img> tag with responsive dimensions. The logo file can be replaced directly by uploading a new image to that path. No changes to HTML or CSS should be required to update the logo. Recommended dimensions and format should be documented in the project guide (e.g., PNG, 500x500px, transparent background).
+•	Since tablets do not support hover effects, animations must be touch-friendly and visually noticeable. Recommended: fade-ins, slow zooms on tap, or slight scale/tilt animations on press. All effects must preserve the page’s luxury aesthetic (no bounce or cartoonish easing).
+________________________________________
+6. 🍽️ Menu Type Selection Page (select-menu.html)
+After selecting the language, user is redirected to a refined vertical split screen with:
+•	Left side:
+o	Background image representing the Food Menu
+o	Overlay title: “Menu” in selected language
+o	Short subtitle like “Discover our dishes”
+o	Entire left panel is a button
+•	Right side:
+o	Background image representing the Wine Menu
+o	Overlay title: “Wine List” in selected language
+o	Subtitle: “Explore our cellar”
+o	Entire right panel is a button
+•	•  Image configuration: Background images for each panel (Menu and Wine Menu) must be defined in the CSS with separate classes and must be easily replaceable by updating the image file in /assets/.
+•	•  A dedicated admin guide must be provided explaining:
+o	How to change the images (file names, format, recommended resolution)
+o	How to preview the page locally before pushing to GitHub
+Animations: All hover effects must be replaced or accompanied by tap-triggered or auto-play animations, such as:
+•	Slow zoom-in effect on panel background images
+•	Smooth slide-in text on page load
+•	Gold divider line animating in with a fade or grow effect
+All animations must remain slow, refined, and elegant.
+Styling specifics:
+•	Each panel = 50% width
+•	Divided with thin gold vertical line
+•	Text overlays use EngraversGothic BT in uppercase, with gold font color
+•	On hover or touch: subtle fade animation or shadow
+Images:
+•	Should be muted, classy, slightly desaturated
+•	Examples: fine dish close-up, elegant wine glass on linen
+________________________________________
+7. 🧭 Navigation & UX Controls
+| Button         | Behavior                                      | Location                         | Style                           |
+| -------------- | --------------------------------------------- | -------------------------------- | ------------------------------- |
+| 🔙 Home        | Return to language selection (`index.html`)   | Bottom-left (or hidden edge tap) | Transparent icon, gold stroke   |
+| 📂 Menu Select | Return to menu/wine page (`select-menu.html`) | Bottom-right (or edge tap)       | Transparent icon, gold stroke   |
+| ⬆️ Top         | Scroll to top of the menu (if scrollable)     | Bottom-center floating           | Optional — only shown if needed |
+
+Behavior:
+•	Auto-hide buttons after 3–5 seconds of inactivity
+•	Reappear on edge swipe or light tap
+•	Buttons never obstruct menu content
+•	Implemented via CSS fade + JS event listeners
+________________________________________
+8. 📲 PWA Capabilities
+•	Manifest.json:
+o	name: Full restaurant name
+o	short_name: Menu
+o	display: standalone
+o	start_url: /index.html
+o	theme_color: #0D1B2A (deep blue)
+o	background_color: #0D1B2A
+o	Icon set (192x192, 512x512)
+•	Service Worker:
+o	Cache all assets on first visit
+o	Update automatically if online
+o	Offline fallback is cached version
+•	Add to Home Screen prompt on Android Chrome after install conditions are met
+________________________________________
+9. 🔄 Menu Content
+•	Each menu page (menu-xx.html, wine-xx.html) loads a fullscreen JPG image.
+•	No headers, no scrollbars unless necessary.
+•	object-fit: cover, width: 100vw, height: 100vh.
+Example HTML:
+<img src="assets/menu-en.jpg" class="fullscreen" alt="English Menu" />
+CSS:
+body {
+  margin: 0;
+  padding: 0;
+  background: #0D1B2A;
+  overflow: hidden;
+}
+img.fullscreen {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+}
+________________________________________
+10. 🔧 Update Strategy
+•	When the restaurant changes menu images:
+o	Update the relevant JPGs in /assets/
+o	Commit and push to GitHub
+•	Tablets will fetch updated menus automatically on next connection
+________________________________________
+✅ Summary: AI Coding Checklist
+•	All files must be static and GitHub Pages-compatible
+•	All fonts and assets must be embedded or linked
+•	All pages must load in fullscreen and be responsive on tablet
+•	PWA installable with service worker and manifest
+•	Elegant split design for menu selection page
+•	Ultra-clean navigation buttons with auto-hide
+•	No login, auth, or public links
+•	High-end visual style: Deep blue, gold, crème, with EngraversGothic BT
+
