@@ -176,16 +176,25 @@ class BackgroundAssetDetector {
     
     /**
      * Get all assets that need to be checked
+     * Context-aware: different asset sets based on page type
      */
     async getAllAssetsToCheck() {
         const allAssets = [];
+        const currentContext = this.getCurrentMenuContext();
         
-        // Add static assets
-        allAssets.push(...ASSET_MANIFEST.videos.map(url => ({ type: 'video', url })));
-        allAssets.push(...ASSET_MANIFEST.images.map(url => ({ type: 'image', url })));
-        allAssets.push(...ASSET_MANIFEST.fonts.map(url => ({ type: 'font', url })));
+        // Static assets logic based on page type
+        if (!currentContext.isSpecificMenu && !currentContext.isSelectMenu) {
+            // Index page: Check all static assets
+            allAssets.push(...ASSET_MANIFEST.videos.map(url => ({ type: 'video', url })));
+            allAssets.push(...ASSET_MANIFEST.images.map(url => ({ type: 'image', url })));
+            allAssets.push(...ASSET_MANIFEST.fonts.map(url => ({ type: 'font', url })));
+        } else if (currentContext.isSelectMenu) {
+            // Select-menu page: Only check background images (user will see them)
+            allAssets.push(...ASSET_MANIFEST.images.map(url => ({ type: 'image', url })));
+        }
+        // Menu/wine pages: No static assets (navigation.js handles everything)
         
-        // Add dynamic menu images
+        // Add dynamic menu images (context-aware)
         const menuAssets = await this.getMenuAssetsToCheck();
         allAssets.push(...menuAssets);
         
@@ -194,11 +203,19 @@ class BackgroundAssetDetector {
     
     /**
      * Get menu assets to check (dynamic based on detected counts)
+     * Context-aware: check based on page type and selected language
      */
     async getMenuAssetsToCheck() {
         const menuAssets = [];
         
-        for (const lang of ASSET_MANIFEST.menuImages.languages) {
+        // Determine context from current page
+        const currentContext = this.getCurrentMenuContext();
+        
+        // Different logic based on page type
+        if (currentContext.isSelectMenu) {
+            // Select-menu page: Only check selected language
+            const lang = currentContext.lang;
+            
             for (const menuType of ASSET_MANIFEST.menuImages.types) {
                 // Check cached page count or use default
                 const cacheKey = `pageCount_${menuType}_${lang}`;
@@ -220,9 +237,101 @@ class BackgroundAssetDetector {
                     });
                 }
             }
+            
+            console.log(`🎯 Background detector: Language-specific check for ${lang} (${menuAssets.length} assets)`);
+        } else if (currentContext.isSpecificMenu) {
+            // Menu/wine pages: SKIP - navigation.js handles everything
+            console.log(`⏭️ Background detector: Skipping on ${currentContext.menuType} page - navigation.js handles detection`);
+            return [];
+        } else {
+            // Index page: Full comprehensive check
+            for (const lang of ASSET_MANIFEST.menuImages.languages) {
+                for (const menuType of ASSET_MANIFEST.menuImages.types) {
+                    // Check cached page count or use default
+                    const cacheKey = `pageCount_${menuType}_${lang}`;
+                    const cachedCount = localStorage.getItem(cacheKey);
+                    const pagesToCheck = cachedCount ? parseInt(cachedCount) : Math.min(ASSET_MANIFEST.menuImages.maxPages, 3);
+                    
+                    // Add first few pages for hash checking
+                    for (let page = 1; page <= Math.min(pagesToCheck, 3); page++) {
+                        const imageName = `${menuType}_${lang}-${page}`;
+                        
+                        // Check both WebP and JPEG
+                        menuAssets.push({
+                            type: 'menu-image',
+                            url: `/assets/images/${menuType}/${lang}/${imageName}.webp`,
+                            fallback: `/assets/images/${menuType}/${lang}/${imageName}.jpg`,
+                            menuType,
+                            lang,
+                            page
+                        });
+                    }
+                }
+            }
+            
+            console.log(`🌍 Background detector: Full comprehensive check (${menuAssets.length} assets)`);
         }
         
         return menuAssets;
+    }
+    
+    /**
+     * Determine current menu context from URL
+     */
+    getCurrentMenuContext() {
+        const path = window.location.pathname;
+        const params = new URLSearchParams(window.location.search);
+        
+        // Check if we're on select-menu page
+        if (path.includes('/pages/select-menu') || path.includes('select-menu.html')) {
+            return {
+                isSelectMenu: true,
+                isSpecificMenu: false,
+                menuType: null,
+                lang: this.extractLanguageFromPath(path, params)
+            };
+        }
+        
+        // Check if we're on a specific menu page
+        if (path.includes('/pages/menu/')) {
+            return {
+                isSelectMenu: false,
+                isSpecificMenu: true,
+                menuType: 'menu',
+                lang: this.extractLanguageFromPath(path, params)
+            };
+        } else if (path.includes('/pages/wine/')) {
+            return {
+                isSelectMenu: false,
+                isSpecificMenu: true,
+                menuType: 'wine',
+                lang: this.extractLanguageFromPath(path, params)
+            };
+        }
+        
+        // Default: index page or other
+        return {
+            isSelectMenu: false,
+            isSpecificMenu: false,
+            menuType: null,
+            lang: null
+        };
+    }
+    
+    /**
+     * Extract language from path or URL parameters
+     */
+    extractLanguageFromPath(path, params) {
+        // Try URL parameter first
+        const langParam = params.get('lang');
+        if (langParam) return langParam;
+        
+        // Extract from filename (e.g., menu-pt.html -> pt)
+        const pathMatch = path.match(/(?:menu|wine)-(\w+)\.html$/);
+        if (pathMatch) return pathMatch[1];
+        
+        // Default fallback
+        return 'en';
     }
     
     /**
