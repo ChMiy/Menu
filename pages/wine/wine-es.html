@@ -16,7 +16,6 @@
              style="width: 100vw !important; height: 100vh !important; object-fit: fill !important; object-position: center !important; display: block !important; margin: 0 !important; padding: 0 !important; max-width: none !important; max-height: none !important;">
         <div class="nav-controls">
             <button class="nav-button" id="home-btn">⬅ Inicio</button>
-            <button class="nav-button" id="select-menu-btn">📂 Selección Menú</button>
         </div>
     </div>
 
@@ -79,10 +78,8 @@
         
         // Set correct navigation button URLs (use absolute paths for consistency)
         const homeUrl = isLocalhost() ? '/index.html' : `${basePath}index.html`;
-        const selectMenuUrl = isLocalhost() ? '/pages/select-menu.html?lang=es' : `${basePath}pages/select-menu.html?lang=es`;
         
         document.getElementById('home-btn').onclick = () => location.href = homeUrl;
-        document.getElementById('select-menu-btn').onclick = () => location.href = selectMenuUrl;
         
         console.log('Wine ES Debug:', {
             hostname: window.location.hostname,
