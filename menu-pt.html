@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0D1B2A">
+    <title>Menu - Português</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="menu-container">
+        <div class="menu-pages">
+            <!-- Menu pages will be loaded here dynamically -->
+        </div>
+        <div class="nav-controls">
+            <button class="nav-button prev-page" aria-label="Página anterior">←</button>
+            <span class="page-indicator">1/18</span>
+            <button class="nav-button next-page" aria-label="Próxima página">→</button>
+            <button class="nav-button home" aria-label="Voltar ao início">⌂</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuContainer = document.querySelector('.menu-pages');
+            const pageIndicator = document.querySelector('.page-indicator');
+            const prevButton = document.querySelector('.prev-page');
+            const nextButton = document.querySelector('.next-page');
+            const homeButton = document.querySelector('.home');
+            let currentPage = 1;
+            const totalPages = 18;
+
+            // Load all menu pages
+            for (let i = 1; i <= totalPages; i++) {
+                const img = document.createElement('img');
+                img.src = `assets/images/menu/pt/menu_pt-${i}.jpg`;
+                img.alt = `Menu Português - Página ${i}`;
+                img.className = 'menu-image';
+                img.style.display = i === 1 ? 'block' : 'none';
+                menuContainer.appendChild(img);
+            }
+
+            // Update page display
+            function showPage(pageNum) {
+                const images = menuContainer.querySelectorAll('.menu-image');
+                images.forEach((img, index) => {
+                    img.style.display = index + 1 === pageNum ? 'block' : 'none';
+                });
+                pageIndicator.textContent = `${pageNum}/${totalPages}`;
+                prevButton.disabled = pageNum === 1;
+                nextButton.disabled = pageNum === totalPages;
+            }
+
+            // Navigation handlers
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    showPage(currentPage);
+                }
+            });
+
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    showPage(currentPage);
+                }
+            });
+
+            homeButton.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' && currentPage > 1) {
+                    currentPage--;
+                    showPage(currentPage);
+                } else if (e.key === 'ArrowRight' && currentPage < totalPages) {
+                    currentPage++;
+                    showPage(currentPage);
+                } else if (e.key === 'Home' || e.key === 'Escape') {
+                    window.location.href = 'index.html';
+                }
+            });
+
+            // Touch navigation
+            let touchStartX = 0;
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+            }, { passive: true });
+
+            document.addEventListener('touchend', (e) => {
+                const touchEndX = e.changedTouches[0].clientX;
+                const swipeDistance = touchEndX - touchStartX;
+                
+                if (Math.abs(swipeDistance) > 50) { // Min swipe distance
+                    if (swipeDistance > 0 && currentPage > 1) {
+                        currentPage--;
+                        showPage(currentPage);
+                    } else if (swipeDistance < 0 && currentPage < totalPages) {
+                        currentPage++;
+                        showPage(currentPage);
+                    }
+                }
+            }, { passive: true });
+
+            // Initialize first page
+            showPage(1);
+        });
+    </script>
+</body>
+</html> 
