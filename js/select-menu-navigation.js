@@ -85,6 +85,11 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = `${basePath}pages/menu/menu-${lang}.html?lang=${lang}`;
     });
 
+    document.getElementById('desserts-menu').addEventListener('click', () => {
+        const lang = getLang();
+        window.location.href = `${basePath}pages/desserts/desserts-${lang}.html?lang=${lang}`;
+    });
+
     document.getElementById('wine-menu').addEventListener('click', () => {
         const lang = getLang();
         window.location.href = `${basePath}pages/wine/wine-${lang}.html?lang=${lang}`;

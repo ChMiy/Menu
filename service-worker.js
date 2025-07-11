@@ -51,6 +51,7 @@ const FONT_ASSETS = [
 const IMAGE_ASSETS = [
     '/assets/images/logo.png',
     '/assets/images/backgrounds/food-menu-bg.jpg',
+    '/assets/images/backgrounds/desserts-menu-bg.webp',
     '/assets/images/backgrounds/wine-menu-bg.jpg',
     '/assets/images/icons/icon-192.png',
     '/assets/images/icons/icon-512.png'
@@ -111,6 +112,15 @@ const generateMenuUrls = () => {
         for (let i = 1; i <= 6; i++) {
             urls.push(`/assets/images/wine/${lang}/wine_${lang}-${i}.webp`);
             urls.push(`/assets/images/wine/${lang}/wine_${lang}-${i}.jpg`);
+        }
+    });
+
+    // All languages have desserts images (6 pages each, WebP preferred, JPEG fallback)
+    const dessertsLanguages = ['pt', 'en', 'fr', 'es', 'de'];
+    dessertsLanguages.forEach(lang => {
+        for (let i = 1; i <= 6; i++) {
+            urls.push(`/assets/images/desserts/${lang}/desserts_${lang}-${i}.webp`);
+            urls.push(`/assets/images/desserts/${lang}/desserts_${lang}-${i}.jpg`);
         }
     });
 

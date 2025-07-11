@@ -26,19 +26,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const lang = getLang();
     const path = window.location.pathname;
     const isWineMenu = path.includes('wine-');
+    const isDessertsMenu = path.includes('desserts-');
+    
+    // Determine menu type for image paths
+    let menuType = 'menu'; // default to food menu
+    if (isWineMenu) {
+        menuType = 'wine';
+    } else if (isDessertsMenu) {
+        menuType = 'desserts';
+    }
     
     const basePath = GLOBAL_BASE_PATH;
-    // Fix path construction for subdirectories (menu/wine pages are in /pages/menu/ and /pages/wine/)
+    // Fix path construction for subdirectories (menu/wine/deserts pages are in /pages/menu/, /pages/wine/, /pages/deserts/)
     const baseImagePath = isLocalhost() ? 
-        `../../assets/images/${isWineMenu ? 'wine' : 'menu'}/${lang}/` : 
-        `${basePath}assets/images/${isWineMenu ? 'wine' : 'menu'}/${lang}/`;
+        `../../assets/images/${menuType}/${lang}/` : 
+        `${basePath}assets/images/${menuType}/${lang}/`;
     
     console.log('Navigation Debug:', {
         hostname: window.location.hostname,
         port: window.location.port,
         isLocalhost: isLocalhost(),
         basePath: basePath,
-        baseImagePath: baseImagePath
+        baseImagePath: baseImagePath,
+        path: path,
+        isWineMenu: isWineMenu,
+        isDessertsMenu: isDessertsMenu,
+        detectedMenuType: menuType,
+        lang: lang
     });
     
     let currentPage = 1;
@@ -130,11 +144,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Clear cache for other menu types to prevent conflicts
+    function clearOtherMenuTypesCache() {
+        const allMenuTypes = ['menu', 'wine', 'desserts'];
+        const currentMenuType = menuType;
+        
+        allMenuTypes.forEach(type => {
+            if (type !== currentMenuType) {
+                const cacheKey = `pageCount_${type}_${lang}`;
+                const hashKey = `contentHash_${type}_${lang}`;
+                if (localStorage.getItem(cacheKey)) {
+                    console.log(`Clearing cache for different menu type: ${type}_${lang}`);
+                    localStorage.removeItem(cacheKey);
+                    localStorage.removeItem(hashKey);
+                }
+            }
+        });
+    }
+
     // Smart content detection with permanent localStorage caching and content hash verification
     function detectTotalPages() {
-        const menuType = isWineMenu ? 'wine' : 'menu';
-        const cacheKey = `pageCount_${menuType}_${lang}`;
-        const hashKey = `contentHash_${menuType}_${lang}`;
+        const detectedMenuType = menuType; // Use the menuType determined earlier
+        const cacheKey = `pageCount_${detectedMenuType}_${lang}`;
+        const hashKey = `contentHash_${detectedMenuType}_${lang}`;
+        
+        // Clear cache for other menu types to prevent conflicts
+        clearOtherMenuTypesCache();
         
         // Check for service worker version changes (invalidates cache)
         const currentSWVersion = 'v22-navigation-fix';
@@ -152,15 +187,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Check if we have a cached count
         const cachedCount = localStorage.getItem(cacheKey);
+        console.log(`Cache check for ${detectedMenuType}_${lang}: cachedCount=${cachedCount}, cacheKey=${cacheKey}`);
         
         if (cachedCount) {
             // We have cached data, but verify content hasn't changed
             const cachedHash = localStorage.getItem(hashKey);
+            console.log(`Using cached count for ${detectedMenuType}_${lang}: ${cachedCount} pages`);
             
             if (cachedHash) {
                 // Generate current content hash and compare
                 const pageCount = parseInt(cachedCount);
-                generateContentHash(menuType, lang, pageCount)
+                generateContentHash(detectedMenuType, lang, pageCount)
                     .then(currentHash => {
                         if (currentHash === cachedHash) {
                             // Content unchanged - use cached count
@@ -183,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                             
                             // Re-detect with new content
-                            performSmartDetection(menuType, cacheKey, hashKey);
+                            performSmartDetection(detectedMenuType, cacheKey, hashKey);
                         }
                     })
                     .catch(error => {
@@ -199,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`Using cached page count: ${totalPages} for ${lang} ${menuType} (generating hash for future)`);
                 
                 // Generate hash for future comparisons
-                generateContentHash(menuType, lang, totalPages)
+                generateContentHash(detectedMenuType, lang, totalPages)
                     .then(hash => {
                         localStorage.setItem(hashKey, hash);
                         console.log(`Content hash generated for ${lang} ${menuType}`);
@@ -215,25 +252,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Perform smart detection
-        console.log(`Detecting pages for ${lang} ${menuType}...`);
-        performSmartDetection(menuType, cacheKey, hashKey);
+        console.log(`Detecting pages for ${lang} ${detectedMenuType}...`);
+        performSmartDetection(detectedMenuType, cacheKey, hashKey);
     }
     
     function performSmartDetection(menuType, cacheKey, hashKey) {
-        // Start with reasonable estimates based on known data
-        const defaultCounts = {
-            'menu': { 'pt': 17, 'en': 17, 'fr': 12, 'es': 12, 'de': 12 },
-            'wine': { 'pt': 6, 'en': 6, 'fr': 6, 'es': 6, 'de': 6 }
-        };
-        
-        const estimatedCount = defaultCounts[menuType][lang] || 12;
         let detectedCount = 0;
         let testingComplete = false;
-        
-        // Test a reasonable range around the estimate
-        const testRange = Math.max(25, estimatedCount + 8); // Test up to 25 or estimate+8
-        let pendingTests = 0;
-        let completedTests = 0;
+        let currentTestPage = 1;
         
         function completeDetection() {
             if (testingComplete) return;
@@ -244,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Cache the result permanently
             localStorage.setItem(cacheKey, totalPages.toString());
             
-            console.log(`Smart detection complete: ${totalPages} pages for ${lang} ${menuType}`);
+            console.log(`Sequential detection complete: ${totalPages} pages for ${lang} ${menuType}`);
             
             // Generate and cache content hash for future change detection
             generateContentHash(menuType, lang, totalPages)
@@ -256,58 +282,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log(`Hash generation failed for ${lang} ${menuType}, proceeding without hash`);
                 });
             
-            // Check if we found more pages than expected (new content)
-            if (totalPages > estimatedCount) {
-                console.log(`New content detected! Found ${totalPages} pages, expected ${estimatedCount}`);
-                // Clear image cache to ensure new content is fetched fresh
-                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                    navigator.serviceWorker.controller.postMessage({
-                        type: 'INVALIDATE_CACHE',
-                        reason: 'New content detected'
-                    });
-                }
-            }
-            
             sequentialPreload(currentPage);
             updateBackButton(); // Update back button after page count is known
         }
         
-        // Test pages in parallel with smart batching
-        for (let page = 1; page <= testRange; page++) {
-            const imageName = `${menuType}_${lang}-${page}.jpg`;
-            pendingTests++;
+        // Sequential detection: test one page at a time, stop when not found
+        function testNextPage() {
+            if (testingComplete) return;
             
-            // Add small delay to avoid overwhelming the browser
-            setTimeout(() => {
-                loadImageWithFallback(baseImagePath, imageName,
-                    (src, format) => {
-                        detectedCount = Math.max(detectedCount, page);
-                        completedTests++;
-                        
-                        // If we've tested enough and haven't found new pages recently, complete
-                        if (completedTests >= Math.min(testRange, detectedCount + 3)) {
-                            completeDetection();
-                        }
-                    },
-                    () => {
-                        completedTests++;
-                        
-                        // If we've tested enough pages beyond the last found page, complete
-                        if (completedTests >= Math.min(testRange, detectedCount + 3)) {
-                            completeDetection();
-                        }
-                    }
-                );
-            }, page * 50); // 50ms stagger to avoid overwhelming
+            const imageName = `${menuType}_${lang}-${currentTestPage}.jpg`;
+            console.log(`Testing sequential image: ${baseImagePath}${imageName} (page ${currentTestPage})`);
+            
+            loadImageWithFallback(baseImagePath, imageName,
+                (src, format) => {
+                    console.log(`Found page ${currentTestPage}: ${src} (menuType: ${menuType})`);
+                    detectedCount = currentTestPage;
+                    currentTestPage++;
+                    
+                    // Continue testing next page
+                    setTimeout(testNextPage, 50); // Small delay to avoid overwhelming
+                },
+                () => {
+                    console.log(`Page ${currentTestPage} not found - stopping detection at ${detectedCount} pages`);
+                    // This page doesn't exist, so we're done
+                    completeDetection();
+                }
+            );
         }
         
-        // Safety timeout to ensure detection completes
+        // Start sequential testing from page 1
+        testNextPage();
+        
+        // Safety timeout to ensure detection completes (30 seconds max)
         setTimeout(() => {
             if (!testingComplete) {
                 console.log(`Detection timeout reached, using detected count: ${detectedCount}`);
                 completeDetection();
             }
-        }, 10000); // 10 second maximum
+        }, 30000);
     }
 
     // Sequential preloading starting from page 1
@@ -326,7 +338,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (index >= pagesToPreload.length) return;
             
             const page = pagesToPreload[index];
-            const imageName = `${isWineMenu ? 'wine' : 'menu'}_${lang}-${page}.jpg`;
+            const imageName = `${menuType}_${lang}-${page}.jpg`;
+            console.log(`Preloading: ${baseImagePath}${imageName} (menuType: ${menuType})`);
             
             loadImageWithFallback(baseImagePath, imageName,
                 (src, format) => {
@@ -354,7 +367,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateImage(page) {
         if (!menuImage || page < 1 || page > totalPages) return;
         
-        const imageName = `${isWineMenu ? 'wine' : 'menu'}_${lang}-${page}.jpg`;
+        const imageName = `${menuType}_${lang}-${page}.jpg`;
+        console.log(`Loading image: ${baseImagePath}${imageName} (menuType: ${menuType}, page: ${page})`);
         
         // Add fade effect
         menuImage.classList.add('fade');
@@ -363,7 +377,8 @@ document.addEventListener('DOMContentLoaded', () => {
             (src, format) => {
         setTimeout(() => {
                     menuImage.src = src;
-            menuImage.alt = `${isWineMenu ? 'Wine List' : 'Menu'} ${lang.toUpperCase()} - Page ${page}`;
+            const menuTypeDisplayName = menuType === 'wine' ? 'Wine List' : menuType === 'desserts' ? 'Desserts' : 'Menu';
+            menuImage.alt = `${menuTypeDisplayName} ${lang.toUpperCase()} - Page ${page}`;
             menuImage.classList.remove('fade');
             currentPage = page;
             
@@ -402,8 +417,10 @@ document.addEventListener('DOMContentLoaded', () => {
         backButton.className = 'back-button';
         
         // Add appropriate class based on menu type
-        if (isWineMenu) {
+        if (menuType === 'wine') {
             backButton.classList.add('wine-page');
+        } else if (menuType === 'desserts') {
+            backButton.classList.add('desserts-page');
         } else {
             backButton.classList.add('menu-page');
         }

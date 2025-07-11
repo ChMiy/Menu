@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0D1B2A">
+    <title>Desserts English</title>
+    <link rel="manifest" href="../../manifest.json">
+    <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+    <div class="menu-container">
+        <img src="" 
+             alt="Desserts English" 
+             class="menu-image"
+             style="width: 100vw !important; height: 100vh !important; object-fit: fill !important; object-position: center !important; display: block !important; margin: 0 !important; padding: 0 !important; max-width: none !important; max-height: none !important;">
+        <div class="nav-controls">
+            <button class="nav-button" id="home-btn">⬅ Home</button>
+            <button class="nav-button" id="select-menu-btn">📂 Menu Select</button>
+        </div>
+    </div>
+    <script>
+        // Robust localhost detection
+        function isLocalhost() {
+            const hostname = window.location.hostname;
+            const port = window.location.port;
+            
+            // Check for localhost conditions
+            const isLocalIP = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+            const isLocalPort = port === '8000' || port === '3000' || port === '8080' || port === '5000';
+            const isFileProtocol = window.location.protocol === 'file:';
+            
+            // Also check if we're NOT on GitHub Pages domain
+            const isGitHubPages = hostname.includes('github.io') || hostname.includes('githubusercontent.com');
+            
+            return (isLocalIP && isLocalPort) || isFileProtocol || (!isGitHubPages && port);
+        }
+        
+        const basePath = isLocalhost() ? '' : '/Menu/';
+        
+        // WebP fallback function - exactly like navigation.js
+        function loadImageWithFallback(imageBasePath, imageName, onSuccess, onError) {
+            const webpSrc = `${imageBasePath}${imageName.replace('.jpg', '.webp')}`;
+            const jpegSrc = `${imageBasePath}${imageName}`;
+            
+            const testWebP = new Image();
+            testWebP.onload = function() {
+                onSuccess(webpSrc, 'webp');
+            };
+            testWebP.onerror = function() {
+                const testJPEG = new Image();
+                testJPEG.onload = function() {
+                    onSuccess(jpegSrc, 'jpeg');
+                };
+                testJPEG.onerror = function() {
+                    onError();
+                };
+                testJPEG.src = jpegSrc;
+            };
+            testWebP.src = webpSrc;
+        }
+        
+        // Set correct image source with WebP fallback
+        const imageBasePath = isLocalhost() ? '../../assets/images/desserts/en/' : `${basePath}assets/images/desserts/en/`;
+        const imageName = 'desserts_en-1.jpg';
+        
+        loadImageWithFallback(imageBasePath, imageName, 
+            function(src, format) {
+                document.querySelector('.menu-image').src = src;
+                console.log(`Desserts EN: Loaded ${format} format - ${src}`);
+            },
+            function() {
+                console.error('Desserts EN: Failed to load image in both WebP and JPEG formats');
+                // Fallback to JPEG as last resort
+                document.querySelector('.menu-image').src = imageBasePath + imageName;
+            }
+        );
+        
+        // Set correct navigation button URLs (use absolute paths for consistency)
+        const homeUrl = isLocalhost() ? '/index.html' : `${basePath}index.html`;
+        const selectMenuUrl = isLocalhost() ? '/pages/select-menu.html?lang=en' : `${basePath}pages/select-menu.html?lang=en`;
+        
+        document.getElementById('home-btn').onclick = () => location.href = homeUrl;
+        document.getElementById('select-menu-btn').onclick = () => location.href = selectMenuUrl;
+        
+        console.log('Desserts EN Debug:', {
+            hostname: window.location.hostname,
+            port: window.location.port,
+            isLocalhost: isLocalhost(),
+            basePath: basePath,
+            imageSrc: document.querySelector('.menu-image').src
+        });
+    </script>
+    <script src="../../js/navigation.js"></script>
+    <script src="../../js/background-asset-detector.js"></script>
+</body>
+</html> 

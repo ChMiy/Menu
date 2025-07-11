@@ -65,6 +65,39 @@
 
         <div class="menu-divider"></div>
 
+        <div class="menu-panel desserts-panel" id="desserts-menu">
+            <img src="../assets/images/backgrounds/desserts-menu-bg.webp" alt="Desserts Menu Background">
+            <div class="panel-content">
+                <!-- English -->
+                <div data-lang="en">
+                    <h2 class="panel-title">Desserts</h2>
+                    <p class="panel-subtitle">Sweet endings</p>
+                </div>
+                <!-- Portuguese -->
+                <div data-lang="pt">
+                    <h2 class="panel-title">Sobremesas</h2>
+                    <p class="panel-subtitle">Finais doces</p>
+                </div>
+                <!-- French -->
+                <div data-lang="fr">
+                    <h2 class="panel-title">Desserts</h2>
+                    <p class="panel-subtitle">Douces fins</p>
+                </div>
+                <!-- Spanish -->
+                <div data-lang="es">
+                    <h2 class="panel-title">Postres</h2>
+                    <p class="panel-subtitle">Finales dulces</p>
+                </div>
+                <!-- German -->
+                <div data-lang="de">
+                    <h2 class="panel-title">Desserts</h2>
+                    <p class="panel-subtitle">Süße Enden</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="menu-divider"></div>
+
         <div class="menu-panel wine-panel" id="wine-menu">
             <img src="../assets/images/backgrounds/wine-menu-bg.jpg" alt="Wine Menu Background">
             <div class="panel-content">
@@ -144,6 +177,19 @@
                 console.log('menuUrl:', menuUrl);
                 console.log('=======================');
                 window.location.href = menuUrl;
+            });
+
+            document.getElementById('desserts-menu').addEventListener('click', () => {
+                const lang = getLang();
+                // Since we're already in /pages/, we need to adjust the path
+                const dessertsUrl = isLocalhost() ? `desserts/desserts-${lang}.html?lang=${lang}` : `${basePath}pages/desserts/desserts-${lang}.html?lang=${lang}`;
+                console.log('=== DESSERTS MENU CLICK ===');
+                console.log('basePath:', basePath);
+                console.log('lang:', lang);
+                console.log('isLocalhost():', isLocalhost());
+                console.log('dessertsUrl:', dessertsUrl);
+                console.log('===========================');
+                window.location.href = dessertsUrl;
             });
 
             document.getElementById('wine-menu').addEventListener('click', () => {

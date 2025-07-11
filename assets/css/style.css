@@ -252,6 +252,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a {
 /* Menu Selection Panels */
 .menu-selection {
     display: flex;
+    flex-direction: row;
     height: 100vh;
     width: 100vw;
     overflow: hidden;
@@ -322,9 +323,11 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a {
 
 .menu-divider {
     width: 2px;
+    height: 100%;
     background: var(--elegant-gold);
     opacity: 0.5;
     transition: opacity 0.3s ease;
+    margin: 0;
 }
 
 /* Navigation Controls */
@@ -371,9 +374,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a {
     .menu-divider {
         width: 80%;
         height: 2px;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
     }
 
     .panel-title {

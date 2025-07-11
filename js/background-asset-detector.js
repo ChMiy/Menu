@@ -14,6 +14,7 @@ const ASSET_MANIFEST = {
     images: [
         '/assets/images/logo.png',
         '/assets/images/backgrounds/food-menu-bg.jpg',
+        '/assets/images/backgrounds/desserts-menu-bg.webp',
         '/assets/images/backgrounds/wine-menu-bg.jpg',
         '/assets/images/icons/icon-192.png',
         '/assets/images/icons/icon-512.png'
@@ -28,7 +29,7 @@ const ASSET_MANIFEST = {
     // Menu images (dynamic - will be generated)
     menuImages: {
         languages: ['pt', 'en', 'fr', 'es', 'de'],
-        types: ['menu', 'wine'],
+        types: ['menu', 'wine', 'desserts'],
         // Will be populated dynamically based on detected counts
         maxPages: 20 // Maximum pages to check per menu type
     }
@@ -307,6 +308,13 @@ class BackgroundAssetDetector {
                 menuType: 'wine',
                 lang: this.extractLanguageFromPath(path, params)
             };
+        } else if (path.includes('/pages/desserts/')) {
+            return {
+                isSelectMenu: false,
+                isSpecificMenu: true,
+                menuType: 'desserts',
+                lang: this.extractLanguageFromPath(path, params)
+            };
         }
         
         // Default: index page or other
@@ -326,8 +334,8 @@ class BackgroundAssetDetector {
         const langParam = params.get('lang');
         if (langParam) return langParam;
         
-        // Extract from filename (e.g., menu-pt.html -> pt)
-        const pathMatch = path.match(/(?:menu|wine)-(\w+)\.html$/);
+        // Extract from filename (e.g., menu-pt.html -> pt, desserts-en.html -> en)
+        const pathMatch = path.match(/(?:menu|wine|desserts)-(\w+)\.html$/);
         if (pathMatch) return pathMatch[1];
         
         // Default fallback
