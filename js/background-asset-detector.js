@@ -241,8 +241,8 @@ class BackgroundAssetDetector {
             
             console.log(`🎯 Background detector: Language-specific check for ${lang} (${menuAssets.length} assets)`);
         } else if (currentContext.isSpecificMenu) {
-            // Menu/wine pages: SKIP - navigation.js handles everything
-            console.log(`⏭️ Background detector: Skipping on ${currentContext.menuType} page - navigation.js handles detection`);
+            // Menu/wine/desserts pages: SKIP - navigation.js handles progressive detection
+            console.log(`⏭️ Background detector: Skipping on ${currentContext.menuType} page - navigation.js handles progressive detection`);
             return [];
         } else {
             // Index page: Full comprehensive check

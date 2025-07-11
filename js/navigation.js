@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearOtherMenuTypesCache();
         
         // Check for service worker version changes (invalidates cache)
-        const currentSWVersion = 'v22-navigation-fix';
+        const currentSWVersion = 'v23-progressive-loading';
         const lastSWVersion = localStorage.getItem('lastSWVersion');
         
         if (lastSWVersion && lastSWVersion !== currentSWVersion) {
@@ -260,6 +260,37 @@ document.addEventListener('DOMContentLoaded', () => {
         let detectedCount = 0;
         let testingComplete = false;
         let currentTestPage = 1;
+        let navigationEnabled = false;
+        
+        // Enable navigation as soon as we have at least 2 pages
+        function enableProgressiveNavigation(currentDetectedCount) {
+            if (navigationEnabled) return;
+            navigationEnabled = true;
+            
+            totalPages = currentDetectedCount;
+            console.log(`Progressive navigation enabled: ${totalPages} pages detected for ${lang} ${menuType}`);
+            
+            // Enable navigation immediately
+            sequentialPreload(currentPage);
+            updateBackButton();
+        }
+        
+        // Update navigation boundaries silently as more pages are detected
+        function updateProgressiveNavigation(newDetectedCount) {
+            if (!navigationEnabled) return;
+            
+            const oldTotalPages = totalPages;
+            totalPages = newDetectedCount;
+            
+            // Only log if there's an actual change
+            if (totalPages !== oldTotalPages) {
+                console.log(`Progressive update: ${oldTotalPages} → ${totalPages} pages for ${lang} ${menuType}`);
+                
+                // Continue preloading new pages silently
+                sequentialPreload(currentPage);
+                updateBackButton();
+            }
+        }
         
         function completeDetection() {
             if (testingComplete) return;
@@ -270,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Cache the result permanently
             localStorage.setItem(cacheKey, totalPages.toString());
             
-            console.log(`Sequential detection complete: ${totalPages} pages for ${lang} ${menuType}`);
+            console.log(`Progressive detection complete: ${totalPages} pages for ${lang} ${menuType}`);
             
             // Generate and cache content hash for future change detection
             generateContentHash(menuType, lang, totalPages)
@@ -282,8 +313,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log(`Hash generation failed for ${lang} ${menuType}, proceeding without hash`);
                 });
             
-            sequentialPreload(currentPage);
-            updateBackButton(); // Update back button after page count is known
+            // If navigation wasn't enabled yet (only 1 page), enable it now
+            if (!navigationEnabled) {
+                sequentialPreload(currentPage);
+                updateBackButton();
+            } else {
+                // Final update to ensure everything is in sync
+                updateProgressiveNavigation(totalPages);
+            }
         }
         
         // Sequential detection: test one page at a time, stop when not found
@@ -297,6 +334,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 (src, format) => {
                     console.log(`Found page ${currentTestPage}: ${src} (menuType: ${menuType})`);
                     detectedCount = currentTestPage;
+                    
+                    // Enable navigation as soon as we detect page 2
+                    if (currentTestPage === 2 && !navigationEnabled) {
+                        enableProgressiveNavigation(detectedCount);
+                    } else if (navigationEnabled) {
+                        // Update navigation with new page count
+                        updateProgressiveNavigation(detectedCount);
+                    }
+                    
                     currentTestPage++;
                     
                     // Continue testing next page
@@ -322,28 +368,48 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 30000);
     }
 
-    // Sequential preloading starting from page 1
+    // Track preloaded pages to avoid redundant loading
+    let preloadedPages = new Set();
+    let preloadingInProgress = false;
+    
+    // Sequential preloading starting from page 1 (optimized for progressive loading)
     function sequentialPreload(currentPage) {
-        // Create array of pages to preload (excluding current page)
+        // Prevent multiple simultaneous preloading processes
+        if (preloadingInProgress) return;
+        
+        // Create array of pages to preload (excluding current page and already preloaded)
         const pagesToPreload = [];
         for (let page = 1; page <= totalPages; page++) {
-            if (page !== currentPage) {
+            if (page !== currentPage && !preloadedPages.has(page)) {
                 pagesToPreload.push(page);
             }
         }
         
+        // Nothing new to preload
+        if (pagesToPreload.length === 0) return;
+        
+        preloadingInProgress = true;
+        console.log(`Starting sequential preload: pages [${pagesToPreload.join(', ')}] (menuType: ${menuType})`);
+        
         // Process pages sequentially - each waits for previous to complete
         function preloadNextPage(index) {
             // All pages processed
-            if (index >= pagesToPreload.length) return;
+            if (index >= pagesToPreload.length) {
+                preloadingInProgress = false;
+                console.log(`Sequential preload complete for ${menuType}_${lang}`);
+                return;
+            }
             
             const page = pagesToPreload[index];
             const imageName = `${menuType}_${lang}-${page}.jpg`;
-            console.log(`Preloading: ${baseImagePath}${imageName} (menuType: ${menuType})`);
+            console.log(`Preloading: ${baseImagePath}${imageName} (page ${page}/${totalPages})`);
             
             loadImageWithFallback(baseImagePath, imageName,
                 (src, format) => {
                     console.log(`Preloaded page ${page} (${format}): ${src}`);
+                    
+                    // Mark as preloaded and create image object
+                    preloadedPages.add(page);
                     const img = new Image();
                     img.src = src;
                     
@@ -352,6 +418,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 () => {
                     console.warn(`Failed to preload page ${page} (both WebP and JPEG)`);
+                    
+                    // Still mark as attempted to avoid retrying
+                    preloadedPages.add(page);
                     
                     // Continue to next page even if this one failed
                     preloadNextPage(index + 1);
@@ -464,12 +533,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Keyboard navigation
+    // Keyboard navigation (progressive boundary-aware)
     document.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowRight' && currentPage < totalPages) {
+            console.log(`Keyboard: Next page ${currentPage + 1}/${totalPages}`);
             updateImage(currentPage + 1);
         } else if (e.key === 'ArrowLeft' && currentPage > 1) {
+            console.log(`Keyboard: Previous page ${currentPage - 1}/${totalPages}`);
             updateImage(currentPage - 1);
+        } else if (e.key === 'ArrowRight' && currentPage >= totalPages) {
+            console.log(`Keyboard: At boundary, cannot go beyond page ${totalPages}`);
         } else if (e.key === 'Escape') {
             window.location.href = `${basePath}pages/select-menu.html?lang=${lang}`;
         } else if (e.key === 'Home') {
@@ -500,15 +573,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (swipeDistanceX < 0) {
                     // Swipe left -> go forward
                     if (currentPage < totalPages) {
+                        console.log(`Touch: Next page ${currentPage + 1}/${totalPages}`);
                         updateImage(currentPage + 1);
+                    } else {
+                        console.log(`Touch: At boundary, cannot go beyond page ${totalPages}`);
                     }
                 } else {
                     // Swipe right -> go back
                     if (currentPage === 1) {
                         // On first page, swipe right to go back to menu selection
+                        console.log(`Touch: Back to menu selection from page 1`);
                         window.location.href = `${basePath}pages/select-menu.html?lang=${lang}`;
                     } else {
                         // Go to previous page
+                        console.log(`Touch: Previous page ${currentPage - 1}/${totalPages}`);
                         updateImage(currentPage - 1);
                     }
                 }
