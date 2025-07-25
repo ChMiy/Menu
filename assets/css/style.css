@@ -90,7 +90,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a {
     width: auto;
     height: auto;
     object-fit: cover;
-    filter: brightness(0.9) saturate(1.1);
+    /*filter: brightness(0.9) saturate(1.1);*/
 }
 
 .video-background::after {
@@ -156,8 +156,8 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a {
 
 .language-button {
     background: transparent;
-    border: 2px solid var(--elegant-gold);
-    color: var(--light-creme);
+    border: 2px solid #2D4057;
+    color: #2D4057;
     padding: 1rem 2rem;
     font-family: 'EngraversGothic BT', Georgia, serif;
     font-size: 1.2rem;
