@@ -4,13 +4,13 @@
     --elegant-gold: #D4AF37;
     --light-creme: #F7F1E1;
     --soft-beige: #F5F5DC;
-    --overlay-gradient: linear-gradient(
+   /* --overlay-gradient: linear-gradient(
         to bottom,
         rgba(13, 27, 42, 0.6) 0%,
         rgba(13, 27, 42, 0.4) 50%,
         rgba(13, 27, 42, 0.6) 100%
-    );
-    --overlay-base: rgba(13, 27, 42, 0.3);
+    );*/
+    /*--overlay-base: rgba(13, 27, 42, 0.3);*/
 }
 
 /* Font Face */
