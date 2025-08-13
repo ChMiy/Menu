@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const basePath = isLocalhost() ? '' : '/Menu/';
     videoSource.src = `${basePath}assets/videos/mediterranean_waves_video.mp4`;
+    videoSource.src = `${basePath}assets/videos/white_background_video.mp4`;
     
     console.log('Background Video Debug:', {
         hostname: window.location.hostname,

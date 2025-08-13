@@ -699,4 +699,5 @@ document.addEventListener('DOMContentLoaded', () => {
     autoHideControls();
 }); 
 
+import('./IdleRedirect.js');
 

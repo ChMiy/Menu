@@ -116,6 +116,21 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a {
     pointer-events: none;
 }
 
+/* Hide mobile video by default */
+.video-mobile {
+    display: none;
+}
+
+/* Show mobile video & hide desktop on small screens */
+@media (max-width: 800px) {
+    .video-desktop {
+        display: none;
+    }
+    .video-mobile {
+        display: block;
+    }
+}
+
 /* Content Overlay */
 .content-overlay {
     position: relative;
