@@ -171,8 +171,8 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, a {
 
 .language-button {
     background: transparent;
-    border: 2px solid #2D4057;
-    color: #000000 !important;
+    border: 2px solid #434242;
+    color: #434242 !important;
     padding: 1rem 2rem;
     font-family: 'EngraversGothic BT', Georgia, serif;
     font-size: 1.2rem;
