@@ -8,7 +8,7 @@
     const baseTag = document.querySelector('base[href]');
     const HOMEPAGE_URL = baseTag
       ? baseTag.getAttribute('href')
-      : (window.location.origin + '/');
+      : (window.location.origin + '/Menu');
   
     function isOnHomepage() {
       const p = window.location.pathname.toLowerCase();
