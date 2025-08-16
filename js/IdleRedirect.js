@@ -2,7 +2,7 @@
     // Only run on screens wider than 800px
     if (window.innerWidth <= 800) return;
   
-    const IDLE_TIMEOUT_MS = 60 * 1000; // 1 minute
+    const IDLE_TIMEOUT_MS = 20 * 1000; // 20 seconds
   
     // Build homepage URL dynamically
     const baseTag = document.querySelector('base[href]');
